@@ -1,0 +1,10 @@
+body {
+  background-color: #f8f9fa;
+}
+
+.page-card {
+  background: #ffffff;
+  border: 1px solid #e9ecef;
+  border-radius: 0.75rem;
+  padding: 1rem;
+}
