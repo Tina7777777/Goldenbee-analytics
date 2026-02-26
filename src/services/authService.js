@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabaseClient.js';
+import { supabase } from './supabaseClient.js';
 
 export async function getSession() {
   if (!supabase) {

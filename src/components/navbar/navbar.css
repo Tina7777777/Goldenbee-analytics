@@ -1,0 +1,4 @@
+.app-navbar {
+  border-bottom: 1px solid var(--gba-border-color);
+  background: var(--gba-surface-color);
+}

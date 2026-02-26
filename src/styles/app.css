@@ -1,10 +1,12 @@
+@import './variables.css';
+
 body {
-  background-color: #f8f9fa;
+  background-color: var(--gba-bg-color);
 }
 
 .page-card {
-  background: #ffffff;
-  border: 1px solid #e9ecef;
+  background: var(--gba-surface-color);
+  border: 1px solid var(--gba-border-color);
   border-radius: 0.75rem;
   padding: 1rem;
 }
