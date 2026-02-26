@@ -25,7 +25,7 @@ Hard constraints:
 - NO TypeScript.
 
 ## 3) Architecture & Organization Rules
-This is a multi-page app. Keep each page in a separate file and maintain modular boundaries.
+This is a static SPA with client-side routing. Keep each screen (page) in a separate module/file and maintain modular boundaries.
 
 Modular design requirements:
 - Use a modular code structure with separate files for components, pages, and feature-specific logic.
@@ -39,6 +39,7 @@ Recommended structure:
 - `utils/` — helpers, formatters, validators, constants.
 - `styles/` — CSS organization (global + page/component-specific).
 - `lib/` — third-party initialization (e.g. supabaseClient.js)
+- `router/` — client-side routing logic and route guards
 
 Rules:
 - Use small focused modules.
@@ -123,31 +124,39 @@ i18n implementation rules:
 - If a translation key is missing, fallback to Bulgarian (bg) and log a warning in console (English log).
 - Keep translation keys stable and structured (e.g. `nav.*`, `auth.*`, `profile.*`, `hiveEntry.*`, `errors.*`).
 
-## 8) Pages and Navigation
-- Split the app into multiple pages and keep navigation URL-driven.
-- Implement page modules as reusable HTML/CSS/JS units with shared components where possible.
-- Implement pages as separate HTML files:
-  - `index.html`
-  - `login.html`
-  - `register.html`
-  - `dashboard.html`
-  - `apiary.html?id=:id`
-  - `hive.html?id=:id`
-  - `analytics.html`
-  - `admin.html`
-  - `profile.html`
+## 8) Pages and Navigation (Static SPA with client-side routing)
+- Build as a static SPA with a single HTML entry point: `index.html`.
+- Use a lightweight custom client-side router in `src/router/router.js` (no frameworks).
+- Keep each screen (page) in a separate folder and file set:
+  - `src/pages/<page>/<page>.js`
+  - `src/pages/<page>/<page>.html` (template)
+  - `src/pages/<page>/<page>.css` (page styles)
 
-- Use URL query parameters (e.g. `?id=`) for entity identification.
-- Avoid SPA-style client-side dynamic routing frameworks.
-- Protect route access in frontend flow based on session and role (user/admin), aligned with Supabase policies.
+Routes (URLs) must represent different screens:
+- `/` (Home)
+- `/login`
+- `/register`
+- `/dashboard`
+- `/profile`
+- `/apiary?id=:id`
+- `/hive?id=:id`
+- `/analytics`
+- `/admin`
+
+Routing rules:
+- Navigation must be URL-driven using the History API (pushState + popstate) without full page reload.
+- The router must implement a clear lifecycle: resolve route → render view → initialize logic.
+- Use query parameters (e.g. `?id=`) for entity identification.
+- Validate required query parameters (e.g. `id`) and redirect to Not Found if invalid or missing.
+- Render a dedicated Not Found screen for unknown routes.
 
 ### Route Protection Matrix
-| Page / URL | Access | Notes |
+| Route | Access | Notes |
 |---|---|---|
-| `/`, `/login`, `/register` | Public | If authenticated, redirect away from `/login` and `/register` to `/dashboard`. |
-| `/dashboard`, `/profile`, `/apiary?id=:id`, `/hive?id=:id`, `/analytics` | Authenticated (`user` or `admin`) | UI route guard + enforce ownership in DB via RLS policies. |
-| `/admin` | Authenticated + `admin` role | Block in UI and enforce via DB policies / RLS. |
-| `*` (unknown) | Public | Show Not Found page or redirect to `/`. |
+| `/`, `/login`, `/register` | Public | If authenticated, redirect away from auth routes to `/dashboard`. |
+| `/dashboard`, `/profile`, `/apiary?id=:id`, `/hive?id=:id`, `/analytics` | Authenticated (`user` or `admin`) | Guard in router + enforce ownership in DB via RLS. |
+| `/admin` | Authenticated + `admin` role | Guard in router and enforce via DB policies/RLS. |
+| `*` (unknown) | Public | Render Not Found screen. |
 
 ## 9) Future Voice Input Integration (Architecture Readiness)
 Prepare extension points now:
@@ -173,6 +182,7 @@ Prepare extension points now:
   - feature checklist
 - Keep implementation aligned with capstone requirements at all times.
 - Any feature tradeoff must be documented in README and/or project notes.
+Build: Static SPA with client-side routing.
 
 ## 12) Delivery Checklist for AI-Assisted Changes
 Before finalizing any change:
