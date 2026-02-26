@@ -16,8 +16,14 @@ export const en = {
   },
   common: {
     guest: 'Guest',
+    user: 'User',
     admin: 'Admin',
     info: 'Info'
+  },
+  dev: {
+    mockLogin: 'Mock Login',
+    mockLogout: 'Mock Logout',
+    mockAdmin: 'Mock Admin'
   },
   pages: {
     home: {
@@ -34,7 +40,9 @@ export const en = {
     },
     dashboard: {
       title: 'Dashboard',
-      description: 'Overview of apiaries, hives, and latest inspections (placeholder).'
+      description: 'Overview of apiaries, hives, and latest inspections (placeholder).',
+      apiaryLink: 'Open apiary #123',
+      hiveLink: 'Open hive #123'
     },
     apiary: {
       title: 'Apiary',

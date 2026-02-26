@@ -1,27 +1,19 @@
-import '../../utils/appSetup.js';
 import './dashboard.css';
-import { renderFooter } from '../../components/footer/footer.js';
-import { renderNavbar } from '../../components/navbar/navbar.js';
-import { initI18n, t } from '../../i18n/i18n.js';
-import { setHtml } from '../../utils/dom.js';
+import { t } from '../../i18n/i18n.js';
 
-export function initDashboardPage() {
-  initI18n();
-  renderNavbar({ active: 'dashboard' });
-  renderFooter();
-  document.title = `${t('app.name')} - ${t('pages.dashboard.title')}`;
-
-  setHtml(
-    '#page-root',
-    `
-      <section class="dashboard-page">
-        <h1 class="mb-4">${t('pages.dashboard.title')}</h1>
-        <div class="page-card">
-          <p class="mb-0">${t('pages.dashboard.description')}</p>
+export function render() {
+  return `
+    <section class="dashboard-page">
+      <h1 class="mb-4">${t('pages.dashboard.title')}</h1>
+      <div class="page-card">
+        <p class="mb-3">${t('pages.dashboard.description')}</p>
+        <div class="d-flex gap-2 flex-wrap">
+          <a href="/apiary?id=123" data-link="spa" class="btn btn-outline-primary btn-sm">${t('pages.dashboard.apiaryLink')}</a>
+          <a href="/hive?id=123" data-link="spa" class="btn btn-outline-secondary btn-sm">${t('pages.dashboard.hiveLink')}</a>
         </div>
-      </section>
-    `
-  );
+      </div>
+    </section>
+  `;
 }
 
-initDashboardPage();
+export function init() {}

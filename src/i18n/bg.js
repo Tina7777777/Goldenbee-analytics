@@ -16,8 +16,14 @@ export const bg = {
   },
   common: {
     guest: 'Гост',
+    user: 'Потребител',
     admin: 'Админ',
     info: 'Инфо'
+  },
+  dev: {
+    mockLogin: 'Mock Login',
+    mockLogout: 'Mock Logout',
+    mockAdmin: 'Mock Admin'
   },
   pages: {
     home: {
@@ -34,7 +40,9 @@ export const bg = {
     },
     dashboard: {
       title: 'Табло',
-      description: 'Преглед на пчелини, кошери и последни инспекции (placeholder).'
+      description: 'Преглед на пчелини, кошери и последни инспекции (placeholder).',
+      apiaryLink: 'Отвори пчелин #123',
+      hiveLink: 'Отвори кошер #123'
     },
     apiary: {
       title: 'Пчелин',
