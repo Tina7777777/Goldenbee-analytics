@@ -108,6 +108,21 @@ UI rules:
 - Use subtle visual effects and clear cues only when they improve usability.
 - Keep interactions clear and accessible.
 
+## Internationalization (i18n) & Language Policy
+- UI language: Bulgarian (bg) by default (all labels, buttons, messages, headings shown to users).
+- Codebase language: English only (file/folder names, function/variable names, comments).
+- Documentation: README in English (for GitHub/capstone reviewers). Optional separate user-facing Bulgarian help later.
+
+i18n implementation rules:
+- Do NOT hardcode user-facing strings inside JS logic or services.
+- Use a lightweight in-house i18n module (no frameworks):
+  - `src/i18n/i18n.js` provides `t(key)` and `setLanguage(lang)`.
+  - Dictionary files: `src/i18n/bg.js`, `src/i18n/en.js` (more languages may be added later).
+- Persist selected language in `localStorage` (key: `gba_lang`).
+- Default language: `bg`.
+- If a translation key is missing, fallback to Bulgarian (bg) and log a warning in console (English log).
+- Keep translation keys stable and structured (e.g. `nav.*`, `auth.*`, `profile.*`, `hiveEntry.*`, `errors.*`).
+
 ## 8) Pages and Navigation
 - Split the app into multiple pages and keep navigation URL-driven.
 - Implement page modules as reusable HTML/CSS/JS units with shared components where possible.
