@@ -11,6 +11,62 @@ Build: Static SPA with client-side routing (History API) using Vanilla JS + Boot
 - Shared UI: `src/components/navbar`, `src/components/footer`, `src/components/toast`
 - i18n: `src/i18n/i18n.js` with Bulgarian default (`bg`) and English fallback (`en`)
 
+## Project Structure
+
+```text
+goldenbee-analytics/
+├─ .env.example
+├─ index.html
+├─ netlify.toml
+├─ package.json
+├─ README.md
+├─ vite.config.js
+├─ src/
+│  ├─ main.js
+│  ├─ assets/
+│  │  └─ img/
+│  ├─ components/
+│  │  ├─ footer/
+│  │  │  ├─ footer.css
+│  │  │  └─ footer.js
+│  │  ├─ navbar/
+│  │  │  ├─ navbar.css
+│  │  │  └─ navbar.js
+│  │  └─ toast/
+│  │     ├─ toast.css
+│  │     └─ toast.js
+│  ├─ i18n/
+│  │  ├─ bg.js
+│  │  ├─ en.js
+│  │  └─ i18n.js
+│  ├─ pages/
+│  │  ├─ admin/ (admin.js, admin.css)
+│  │  ├─ analytics/ (analytics.js, analytics.css)
+│  │  ├─ apiary/ (apiary.js, apiary.css)
+│  │  ├─ dashboard/ (dashboard.js, dashboard.css)
+│  │  ├─ hive/ (hive.js, hive.css)
+│  │  ├─ home/ (home.js, home.css)
+│  │  ├─ login/ (login.js, login.css)
+│  │  ├─ notfound/ (notfound.js, notfound.css)
+│  │  ├─ profile/ (profile.js, profile.css)
+│  │  └─ register/ (register.js, register.css)
+│  ├─ router/
+│  │  └─ router.js
+│  ├─ services/
+│  │  ├─ authService.js
+│  │  ├─ mockAuth.js
+│  │  └─ supabaseClient.js
+│  ├─ styles/
+│  │  ├─ app.css
+│  │  └─ variables.css
+│  └─ utils/
+│     ├─ appSetup.js
+│     └─ dom.js
+└─ supabase/
+	├─ config.toml
+	└─ migrations/
+```
+
 ## Routes
 
 - `/`
@@ -31,6 +87,7 @@ npm install
 npm run dev
 npm run build
 npm run preview
+npx supabase link --project-ref fphxrlinpnxritpflqxu
 ```
 
 ## Netlify
