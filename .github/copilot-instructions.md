@@ -77,9 +77,11 @@ Data and schema rules:
 - Use RLS on all user data tables.
 - Write explicit policies for owner/admin access.
 - Store role information in `user_roles` using a roles enum.
-- Use migrations for all schema changes.
-- Never edit old migrations; always create a new migration.
 - Keep migration files deterministic and reversible where possible.
+- All schema changes must be implemented via Supabase CLI migrations stored under `supabase/migrations/`.
+- Never modify the schema directly from Supabase Dashboard.
+- Never edit existing migration files after they are applied; always create a new migration.
+- Local migration files must be committed to Git.
 
 ## 6) Authentication, Authorization, and Route Protection
 - Use Supabase Auth for registration, login, logout, and session management.
