@@ -1,9 +1,10 @@
 import './navbar.css';
 import { t } from '../../i18n/i18n.js';
-import { getMockSession, setMockAuthed, toggleMockAdmin } from '../../services/mockAuth.js';
+import { signOut } from '../../services/authService.js';
+import { showToast } from '../toast/toast.js';
 import { setHtml } from '../../utils/dom.js';
 
-export function renderNavbar({ active = 'home', isAdmin = false, isAuthed = false } = {}) {
+export function renderNavbar({ active = 'home', isAdmin = false, isAuthed = false, userEmail = '' } = {}) {
   const links = [
     { key: 'home', href: '/', label: t('nav.home') },
     { key: 'dashboard', href: '/dashboard', label: t('nav.dashboard') },
@@ -29,7 +30,17 @@ export function renderNavbar({ active = 'home', isAdmin = false, isAuthed = fals
     `
     : '';
 
-  const authLabel = isAuthed ? t('common.user') : t('common.guest');
+  const authControls = isAuthed
+    ? `
+      <span class="badge text-bg-secondary">${t('common.user')}</span>
+      ${userEmail ? `<span class="small text-secondary auth-email">${userEmail}</span>` : ''}
+      <button type="button" class="btn btn-sm btn-outline-secondary" data-action="logout">${t('nav.logout')}</button>
+    `
+    : `
+      <a href="/login" data-link="spa" class="link-secondary text-decoration-none">${t('nav.login')}</a>
+      <span class="text-secondary">/</span>
+      <a href="/register" data-link="spa" class="link-secondary text-decoration-none">${t('nav.register')}</a>
+    `;
 
   setHtml(
     '#navbar-slot',
@@ -46,13 +57,7 @@ export function renderNavbar({ active = 'home', isAdmin = false, isAuthed = fals
               ${adminItem}
             </ul>
             <div class="d-flex align-items-center gap-2 small flex-wrap">
-              <span class="badge text-bg-secondary">${authLabel}</span>
-              <a href="/login" data-link="spa" class="link-secondary text-decoration-none">${t('nav.login')}</a>
-              <span class="text-secondary">/</span>
-              <a href="/register" data-link="spa" class="link-secondary text-decoration-none">${t('nav.register')}</a>
-              <button type="button" class="btn btn-sm btn-outline-secondary ms-2" data-action="mock-login">${t('dev.mockLogin')}</button>
-              <button type="button" class="btn btn-sm btn-outline-secondary" data-action="mock-logout">${t('dev.mockLogout')}</button>
-              <button type="button" class="btn btn-sm btn-outline-secondary" data-action="mock-admin">${t('dev.mockAdmin')}</button>
+              ${authControls}
             </div>
           </div>
         </div>
@@ -70,26 +75,16 @@ export function wireNavbarInteractions({ navigate, rerender }) {
 
     const action = button.getAttribute('data-action');
 
-    if (action === 'mock-login') {
-      setMockAuthed(true);
-      navigate('/dashboard', { replace: true });
-      return;
-    }
-
-    if (action === 'mock-logout') {
-      setMockAuthed(false);
-      navigate('/login', { replace: true });
-      return;
-    }
-
-    if (action === 'mock-admin') {
-      const session = getMockSession();
-      if (!session.isAuthed) {
-        return;
-      }
-
-      toggleMockAdmin();
-      rerender();
+    if (action === 'logout') {
+      signOut()
+        .then(() => {
+          showToast(t('auth.logoutSuccess'), t('common.success'));
+          navigate('/login', { replace: true });
+          rerender();
+        })
+        .catch(() => {
+          showToast(t('auth.genericError'), t('common.error'));
+        });
     }
   });
 }

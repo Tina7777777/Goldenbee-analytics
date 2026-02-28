@@ -2,3 +2,10 @@
   border-bottom: 1px solid var(--gba-border-color);
   background: var(--gba-surface-color);
 }
+
+.auth-email {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

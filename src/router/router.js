@@ -8,7 +8,7 @@ import { render as renderLogin, init as initLogin } from '../pages/login/login.j
 import { render as renderNotFound, init as initNotFound } from '../pages/notfound/notfound.js';
 import { render as renderProfile, init as initProfile } from '../pages/profile/profile.js';
 import { render as renderRegister, init as initRegister } from '../pages/register/register.js';
-import { getMockSession } from '../services/mockAuth.js';
+import { getSession, hasAdminRole } from '../services/authService.js';
 import { qs } from '../utils/dom.js';
 
 const routes = {
@@ -113,12 +113,14 @@ function guardRedirectPath(guard, session) {
   }
 
   if (guard === 'auth' && !session.isAuthed) {
-    return '/login';
+    const returnPath = `${window.location.pathname}${window.location.search}`;
+    return `/login?return=${encodeURIComponent(returnPath)}`;
   }
 
   if (guard === 'admin') {
     if (!session.isAuthed) {
-      return '/login';
+      const returnPath = `${window.location.pathname}${window.location.search}`;
+      return `/login?return=${encodeURIComponent(returnPath)}`;
     }
 
     if (!session.isAdmin) {
@@ -145,10 +147,21 @@ export function createRouter({ appSelector, onRouteResolved }) {
   }
 
   function renderCurrent() {
+    void renderCurrentAsync();
+  }
+
+  async function renderCurrentAsync() {
     const pathname = window.location.pathname;
     const searchParams = new URLSearchParams(window.location.search);
     const resolved = resolveRoute(pathname, searchParams);
-    const session = getMockSession();
+    const activeSession = await getSession();
+    const isAuthed = Boolean(activeSession);
+    const isAdmin = isAuthed ? await hasAdminRole(activeSession) : false;
+    const session = {
+      isAuthed,
+      isAdmin,
+      userEmail: activeSession?.user?.email ?? ''
+    };
     const redirectPath = guardRedirectPath(resolved.route.guard, session);
 
     if (redirectPath) {

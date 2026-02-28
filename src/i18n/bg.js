@@ -9,7 +9,8 @@ export const bg = {
     profile: 'Профил',
     admin: 'Админ',
     login: 'Вход',
-    register: 'Регистрация'
+    register: 'Регистрация',
+    logout: 'Изход'
   },
   footer: {
     tagline: 'Капстoун multi-page структура'
@@ -18,12 +19,30 @@ export const bg = {
     guest: 'Гост',
     user: 'Потребител',
     admin: 'Админ',
-    info: 'Инфо'
+    info: 'Инфо',
+    success: 'Успех',
+    error: 'Грешка'
   },
-  dev: {
-    mockLogin: 'Mock Login',
-    mockLogout: 'Mock Logout',
-    mockAdmin: 'Mock Admin'
+  auth: {
+    email: 'Имейл',
+    password: 'Парола',
+    confirmPassword: 'Потвърди паролата',
+    createAccount: 'Създай акаунт',
+    login: 'Вход',
+    registerSuccess: 'Регистрацията е успешна. Моля, провери имейла си, ако е нужно потвърждение.',
+    loginSuccess: 'Успешен вход.',
+    logoutSuccess: 'Успешен изход.',
+    genericError: 'Възникна грешка. Моля, опитай отново.',
+    errors: {
+      requiredFields: 'Моля, попълни всички задължителни полета.',
+      passwordMinLength: 'Паролата трябва да е поне 6 символа.',
+      passwordsMismatch: 'Паролите не съвпадат.',
+      invalidCredentials: 'Невалиден имейл или парола.',
+      emailNotConfirmed: 'Имейлът не е потвърден. Моля, провери пощата си.',
+      userExists: 'Вече има акаунт с този имейл.',
+      weakPassword: 'Паролата не отговаря на изискванията за сигурност.',
+      missingConfig: 'Липсва конфигурация за Supabase. Провери .env настройките.'
+    }
   },
   pages: {
     home: {
@@ -32,11 +51,11 @@ export const bg = {
     },
     login: {
       title: 'Вход',
-      description: 'Екран за вход (placeholder).'
+      description: 'Въведи имейл и парола за достъп до профила си.'
     },
     register: {
       title: 'Регистрация',
-      description: 'Екран за регистрация (placeholder).'
+      description: 'Създай нов акаунт за управление на пчелини и кошери.'
     },
     dashboard: {
       title: 'Табло',
