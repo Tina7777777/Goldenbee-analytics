@@ -1,5 +1,6 @@
 import { render as renderAdmin, init as initAdmin } from '../pages/admin/admin.js';
 import { render as renderAnalytics, init as initAnalytics } from '../pages/analytics/analytics.js';
+import { render as renderApiaries, init as initApiaries } from '../pages/apiaries/apiaries.js';
 import { render as renderApiary, init as initApiary } from '../pages/apiary/apiary.js';
 import { render as renderDashboard, init as initDashboard } from '../pages/dashboard/dashboard.js';
 import { render as renderHive, init as initHive } from '../pages/hive/hive.js';
@@ -47,8 +48,15 @@ const routes = {
     render: renderProfile,
     init: initProfile
   },
+  '/apiaries': {
+    navKey: 'apiaries',
+    titleKey: 'pages.apiaries.title',
+    guard: 'auth',
+    render: renderApiaries,
+    init: initApiaries
+  },
   '/apiary': {
-    navKey: 'dashboard',
+    navKey: 'apiaries',
     titleKey: 'pages.apiary.title',
     guard: 'auth',
     requireId: true,

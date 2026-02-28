@@ -4,6 +4,7 @@ export const bg = {
   },
   nav: {
     home: 'Начало',
+    apiaries: 'Пчелини',
     dashboard: 'Табло',
     analytics: 'Анализи',
     profile: 'Профил',
@@ -21,7 +22,9 @@ export const bg = {
     admin: 'Админ',
     info: 'Инфо',
     success: 'Успех',
-    error: 'Грешка'
+    error: 'Грешка',
+    save: 'Запази',
+    cancel: 'Отказ'
   },
   auth: {
     email: 'Имейл',
@@ -63,6 +66,9 @@ export const bg = {
       apiaryLink: 'Отвори пчелин #123',
       hiveLink: 'Отвори кошер #123'
     },
+    apiaries: {
+      title: 'Пчелини'
+    },
     apiary: {
       title: 'Пчелин',
       description: 'Детайли за пчелин (placeholder).'
@@ -86,6 +92,38 @@ export const bg = {
     notfound: {
       title: '404 - Страницата не е намерена',
       description: 'Страницата, която търсите, не съществува.'
+    }
+  },
+  apiaries: {
+    addButton: 'Добави пчелин',
+    createdAt: 'Създаден на',
+    empty: 'Няма добавени пчелини.',
+    confirmDelete: 'Сигурни ли сте, че искате да изтриете този пчелин?',
+    hivesTitle: 'Кошери',
+    hivesEmpty: 'Няма добавени кошери.',
+    hivesAddButton: 'Добави кошер',
+    form: {
+      name: 'Име на пчелин',
+      location: 'Локация',
+      notes: 'Бележки'
+    },
+    actions: {
+      open: 'Отвори',
+      edit: 'Редактирай',
+      delete: 'Изтрий',
+      back: 'Към пчелини'
+    },
+    toasts: {
+      createSuccess: 'Пчелинът е създаден успешно.',
+      updateSuccess: 'Пчелинът е обновен успешно.',
+      deleteSuccess: 'Пчелинът е изтрит успешно.'
+    },
+    errors: {
+      generic: 'Възникна грешка при работа с пчелините.',
+      notFound: 'Пчелинът не е намерен.',
+      nameRequired: 'Името на пчелина е задължително.',
+      notAuthenticated: 'Трябва да влезете в профила си.',
+      missingConfig: 'Липсва конфигурация за Supabase. Провери .env настройките.'
     }
   }
 };

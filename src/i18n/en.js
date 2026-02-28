@@ -4,6 +4,7 @@ export const en = {
   },
   nav: {
     home: 'Home',
+    apiaries: 'Apiaries',
     dashboard: 'Dashboard',
     analytics: 'Analytics',
     profile: 'Profile',
@@ -21,7 +22,9 @@ export const en = {
     admin: 'Admin',
     info: 'Info',
     success: 'Success',
-    error: 'Error'
+    error: 'Error',
+    save: 'Save',
+    cancel: 'Cancel'
   },
   auth: {
     email: 'Email',
@@ -63,6 +66,9 @@ export const en = {
       apiaryLink: 'Open apiary #123',
       hiveLink: 'Open hive #123'
     },
+    apiaries: {
+      title: 'Apiaries'
+    },
     apiary: {
       title: 'Apiary',
       description: 'Apiary details (placeholder).'
@@ -86,6 +92,38 @@ export const en = {
     notfound: {
       title: '404 - Page Not Found',
       description: 'The page you requested does not exist.'
+    }
+  },
+  apiaries: {
+    addButton: 'Add apiary',
+    createdAt: 'Created at',
+    empty: 'No apiaries added yet.',
+    confirmDelete: 'Are you sure you want to delete this apiary?',
+    hivesTitle: 'Hives',
+    hivesEmpty: 'No hives added yet.',
+    hivesAddButton: 'Add hive',
+    form: {
+      name: 'Apiary name',
+      location: 'Location',
+      notes: 'Notes'
+    },
+    actions: {
+      open: 'Open',
+      edit: 'Edit',
+      delete: 'Delete',
+      back: 'Back to apiaries'
+    },
+    toasts: {
+      createSuccess: 'Apiary created successfully.',
+      updateSuccess: 'Apiary updated successfully.',
+      deleteSuccess: 'Apiary deleted successfully.'
+    },
+    errors: {
+      generic: 'An error occurred while working with apiaries.',
+      notFound: 'Apiary was not found.',
+      nameRequired: 'Apiary name is required.',
+      notAuthenticated: 'You must be signed in.',
+      missingConfig: 'Supabase configuration is missing. Check .env settings.'
     }
   }
 };

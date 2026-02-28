@@ -7,12 +7,14 @@ import { setHtml } from '../../utils/dom.js';
 export function renderNavbar({ active = 'home', isAdmin = false, isAuthed = false, userEmail = '' } = {}) {
   const links = [
     { key: 'home', href: '/', label: t('nav.home') },
+    { key: 'apiaries', href: '/apiaries', label: t('nav.apiaries'), authOnly: true },
     { key: 'dashboard', href: '/dashboard', label: t('nav.dashboard') },
     { key: 'analytics', href: '/analytics', label: t('nav.analytics') },
     { key: 'profile', href: '/profile', label: t('nav.profile') }
   ];
 
   const navItems = links
+    .filter((item) => !item.authOnly || isAuthed)
     .map(
       ({ key, href, label }) => `
         <li class="nav-item">
