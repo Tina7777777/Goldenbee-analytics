@@ -200,6 +200,51 @@ export const bg = {
           notAuthenticated: 'Трябва да влезете в профила си.',
           missingConfig: 'Липсва конфигурация за Supabase. Провери .env настройките.'
         }
+      },
+      inspections: {
+        title: 'Прегледи',
+        newButton: 'Нов преглед',
+        deleteButton: 'Изтрий',
+        empty: 'Няма въведени прегледи.',
+        importantBadge: 'Важно',
+        confirmDelete: 'Сигурни ли сте, че искате да изтриете този преглед?',
+        form: {
+          broodFrames: 'Рамки с пило',
+          honeyPollenFrames: 'Рамки с мед/прашец',
+          totalFrames: 'Общо рамки',
+          swarmingState: 'Роево състояние',
+          eggsPresent: 'Има яйца',
+          queenSeen: 'Видяна майка',
+          important: 'Маркирай като важно',
+          notes: 'Бележки'
+        },
+        swarming: {
+          none: 'Няма',
+          suspected: 'Съмнение',
+          swarmed: 'Роил се',
+          split: 'Отводка'
+        },
+        summary: {
+          brood: 'Пило',
+          honeyPollen: 'Мед/прашец',
+          total: 'Общо',
+          swarming: 'Роене',
+          flags: 'Яйца / Майка',
+          yes: 'Да',
+          no: 'Не'
+        },
+        actions: {
+          saving: 'Запазване...'
+        },
+        toasts: {
+          createSuccess: 'Прегледът е добавен успешно.',
+          deleteSuccess: 'Прегледът е изтрит успешно.'
+        },
+        errors: {
+          generic: 'Възникна грешка при работа с прегледите.',
+          notAuthenticated: 'Трябва да влезете в профила си.',
+          missingConfig: 'Липсва конфигурация за Supabase. Провери .env настройките.'
+        }
       }
     }
   }

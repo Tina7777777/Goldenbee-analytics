@@ -200,6 +200,51 @@ export const en = {
           notAuthenticated: 'You must be signed in.',
           missingConfig: 'Supabase configuration is missing. Check .env settings.'
         }
+      },
+      inspections: {
+        title: 'Inspections',
+        newButton: 'New inspection',
+        deleteButton: 'Delete',
+        empty: 'No inspections added.',
+        importantBadge: 'Important',
+        confirmDelete: 'Are you sure you want to delete this inspection?',
+        form: {
+          broodFrames: 'Brood frames',
+          honeyPollenFrames: 'Honey/pollen frames',
+          totalFrames: 'Total frames',
+          swarmingState: 'Swarming state',
+          eggsPresent: 'Eggs present',
+          queenSeen: 'Queen seen',
+          important: 'Mark as important',
+          notes: 'Notes'
+        },
+        swarming: {
+          none: 'None',
+          suspected: 'Suspected',
+          swarmed: 'Swarmed',
+          split: 'Split'
+        },
+        summary: {
+          brood: 'Brood',
+          honeyPollen: 'Honey/pollen',
+          total: 'Total',
+          swarming: 'Swarming',
+          flags: 'Eggs / Queen',
+          yes: 'Yes',
+          no: 'No'
+        },
+        actions: {
+          saving: 'Saving...'
+        },
+        toasts: {
+          createSuccess: 'Inspection created successfully.',
+          deleteSuccess: 'Inspection deleted successfully.'
+        },
+        errors: {
+          generic: 'An error occurred while working with inspections.',
+          notAuthenticated: 'You must be signed in.',
+          missingConfig: 'Supabase configuration is missing. Check .env settings.'
+        }
       }
     }
   }
