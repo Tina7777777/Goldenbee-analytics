@@ -2,6 +2,7 @@ import './apiary.css';
 import { Modal } from 'bootstrap';
 import { t } from '../../i18n/i18n.js';
 import { showToast } from '../../components/toast/toast.js';
+import { getApiaryCurrentHoneyKg } from '../../services/apiaryAnalyticsService.js';
 import { deleteApiary, getApiaryById, updateApiary } from '../../services/apiaryService.js';
 import { createHive, deleteHive, listHivesByApiary, updateHive } from '../../services/hivesService.js';
 import { createSnapshot } from '../../services/superSnapshotsService.js';
@@ -22,6 +23,12 @@ let isHiveSaving = false;
 
 let hivePanelsState = {};
 let requestedHiveId = '';
+let isHoneyEstimateLoading = false;
+let honeyEstimate = {
+  totalKg: 0,
+  supersCount: 0,
+  supersWithSnapshotsCount: 0
+};
 
 function createDefaultHivePanelState() {
   return {
@@ -130,6 +137,10 @@ function formatKgFromFullness(fullness) {
   }
 
   return `${(Number(fullness) / 10).toFixed(1)} ${t('apiaries.hives.supers.kgUnit')}`;
+}
+
+function formatTotalKg(value) {
+  return Number(value || 0).toFixed(1);
 }
 
 function getFriendlyErrorMessage(error) {
@@ -478,6 +489,34 @@ function renderHivesSection() {
   hivesElement.innerHTML = hivesSectionMarkup();
 }
 
+function honeySummaryMarkup() {
+  if (isHoneyEstimateLoading) {
+    return `
+      <div class="page-card mb-3">
+        <p class="mb-0 text-secondary">${t('common.loading')}</p>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="page-card mb-3">
+      <h2 class="h6 mb-2">${t('apiaries.honeySummary.title')}</h2>
+      <p class="display-6 mb-2">${formatTotalKg(honeyEstimate.totalKg)} ${t('apiaries.hives.supers.kgUnit')}</p>
+      <p class="small text-secondary mb-1">${t('apiaries.honeySummary.activeSupers')}: ${honeyEstimate.supersCount}</p>
+      <p class="small text-secondary mb-0">${t('apiaries.honeySummary.withData')}: ${honeyEstimate.supersWithSnapshotsCount}</p>
+    </div>
+  `;
+}
+
+function renderHoneySummary() {
+  const summaryElement = document.getElementById('apiary-honey-summary');
+  if (!summaryElement) {
+    return;
+  }
+
+  summaryElement.innerHTML = honeySummaryMarkup();
+}
+
 function setHiveSubmitState(saving) {
   isHiveSaving = saving;
 
@@ -531,11 +570,27 @@ function renderContent() {
   }
 
   contentElement.innerHTML = `
+    <div id="apiary-honey-summary"></div>
     ${isEditMode ? editMarkup(currentApiary) : detailsMarkup(currentApiary)}
     <div id="apiary-hives-section"></div>
   `;
 
+  renderHoneySummary();
   renderHivesSection();
+}
+
+async function loadApiaryHoneyEstimate() {
+  isHoneyEstimateLoading = true;
+  renderHoneySummary();
+
+  try {
+    honeyEstimate = await getApiaryCurrentHoneyKg(currentApiaryId);
+  } catch (error) {
+    showToast(getSupersFriendlyErrorMessage(error), t('common.error'));
+  } finally {
+    isHoneyEstimateLoading = false;
+    renderHoneySummary();
+  }
 }
 
 async function loadApiary() {
@@ -713,6 +768,7 @@ async function handleInstallSuperSubmit(formElement) {
 
     showToast(t('apiaries.hives.supers.toasts.installSuccess'), t('common.success'));
     await loadSupersForHive(hiveId);
+    await loadApiaryHoneyEstimate();
   } catch (error) {
     showToast(getSupersFriendlyErrorMessage(error), t('common.error'));
   } finally {
@@ -760,6 +816,7 @@ async function handleSuperSnapshotSubmit(formElement) {
     showToast(t('apiaries.hives.supers.toasts.snapshotSuccess'), t('common.success'));
     formElement.reset();
     await loadSupersForHive(hiveId);
+    await loadApiaryHoneyEstimate();
   } catch (error) {
     showToast(getSupersFriendlyErrorMessage(error), t('common.error'));
   } finally {
@@ -787,6 +844,7 @@ async function handleRemoveSuper(hiveId, superId) {
 
     showToast(t('apiaries.hives.supers.toasts.removeSuccess'), t('common.success'));
     await loadSupersForHive(hiveId);
+    await loadApiaryHoneyEstimate();
   } catch (error) {
     showToast(getSupersFriendlyErrorMessage(error), t('common.error'));
   } finally {
@@ -824,6 +882,7 @@ async function handleHiveDelete(hiveId) {
     }
     showToast(t('apiaries.hives.toasts.deleteSuccess'), t('common.success'));
     await loadHives();
+    await loadApiaryHoneyEstimate();
   } catch (error) {
     showToast(getHivesFriendlyErrorMessage(error), t('common.error'));
   }
@@ -858,6 +917,13 @@ export function init() {
     requestedHiveId = new URLSearchParams(window.location.search).get('hive') || '';
   }
 
+  isHoneyEstimateLoading = true;
+  honeyEstimate = {
+    totalKg: 0,
+    supersCount: 0,
+    supersWithSnapshotsCount: 0
+  };
+
   renderContent();
   void loadApiary();
 
@@ -876,6 +942,7 @@ export function init() {
   }
 
   void loadHives();
+  void loadApiaryHoneyEstimate();
 
   pageElement.addEventListener('click', (event) => {
     const actionElement = event.target.closest('[data-action]');

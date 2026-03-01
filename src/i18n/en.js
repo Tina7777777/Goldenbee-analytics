@@ -98,6 +98,11 @@ export const en = {
   },
   apiaries: {
     addButton: 'Add apiary',
+    honeySummary: {
+      title: 'Current honey estimate',
+      activeSupers: 'Active supers',
+      withData: 'With data'
+    },
     createdAt: 'Created at',
     empty: 'No apiaries added yet.',
     confirmDelete: 'Are you sure you want to delete this apiary?',

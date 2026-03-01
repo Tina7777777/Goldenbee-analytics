@@ -98,6 +98,11 @@ export const bg = {
   },
   apiaries: {
     addButton: 'Добави пчелин',
+    honeySummary: {
+      title: 'Текуща оценка мед',
+      activeSupers: 'Активни магазини',
+      withData: 'С данни'
+    },
     createdAt: 'Създаден на',
     empty: 'Няма добавени пчелини.',
     confirmDelete: 'Сигурни ли сте, че искате да изтриете този пчелин?',
