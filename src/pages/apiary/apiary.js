@@ -4,12 +4,10 @@ import { t } from '../../i18n/i18n.js';
 import { showToast } from '../../components/toast/toast.js';
 import { deleteApiary, getApiaryById, updateApiary } from '../../services/apiaryService.js';
 import { createHive, deleteHive, listHivesByApiary, updateHive } from '../../services/hivesService.js';
-import { createSnapshot } from '../../services/superSnapshotsService.js';
-import { listSnapshotsBySuper } from '../../services/superSnapshotsService.js';
-import { installSuper, listSupersByHive, removeSuper } from '../../services/supersService.js';
 import { navigate } from '../../utils/navigation.js';
 import { initApiarySummary, renderApiarySummary } from './apiarySummary.js';
 import { initInspectionsSection, renderInspectionsSection } from './inspectionsSection.js';
+import { initSupersSection, renderSupersSection } from './supersSection.js';
 
 let currentApiaryId = '';
 let currentApiary = null;
@@ -27,17 +25,7 @@ let requestedHiveId = '';
 
 function createDefaultHivePanelState() {
   return {
-    expanded: false,
-    supersLoading: false,
-    hasLoadedSupers: false,
-    supers: [],
-    snapshotsBySuper: {},
-    installFormOpen: false,
-    installPosition: '',
-    installNotes: '',
-    savingInstall: false,
-    savingRemoveBySuper: {},
-    savingSnapshotBySuper: {}
+    expanded: false
   };
 }
 
@@ -104,8 +92,13 @@ async function expandHiveFromUrl(scroll = false) {
   panelState.expanded = true;
   renderHivesSection();
 
-  if (!panelState.hasLoadedSupers) {
-    await loadSupersForHive(requestedHiveId);
+  const supersContainerEl = document.getElementById(`hive-supers-section-${requestedHiveId}`);
+  if (supersContainerEl) {
+    await initSupersSection({
+      hiveId: requestedHiveId,
+      containerEl: supersContainerEl,
+      onChanged: () => initApiarySummary(currentApiaryId)
+    });
   }
 
   if (scroll) {
@@ -124,14 +117,6 @@ function formatDate(value) {
     dateStyle: 'medium',
     timeStyle: 'short'
   }).format(new Date(value));
-}
-
-function formatKgFromFullness(fullness) {
-  if (fullness === null || fullness === undefined) {
-    return '-';
-  }
-
-  return `${(Number(fullness) / 10).toFixed(1)} ${t('apiaries.hives.supers.kgUnit')}`;
 }
 
 function getFriendlyErrorMessage(error) {
@@ -164,20 +149,6 @@ function getHivesFriendlyErrorMessage(error) {
   }
 
   return t('apiaries.hives.errors.generic');
-}
-
-function getSupersFriendlyErrorMessage(error) {
-  const message = String(error?.message || '').toLowerCase();
-
-  if (message.includes('not authenticated')) {
-    return t('apiaries.hives.supers.errors.notAuthenticated');
-  }
-
-  if (message.includes('configured')) {
-    return t('apiaries.hives.supers.errors.missingConfig');
-  }
-
-  return t('apiaries.hives.supers.errors.generic');
 }
 
 function escapeHtml(value) {
@@ -264,154 +235,12 @@ function hiveModalMarkup() {
   `;
 }
 
-function getFreeSuperPositions(activeSupers) {
-  const occupiedPositions = new Set(activeSupers.map((superItem) => Number(superItem.position)));
-
-  return [1, 2, 3, 4, 5].filter((position) => !occupiedPositions.has(position));
-}
-
-function superInstallFormMarkup(hiveId, panelState, freePositions) {
-  if (!panelState.installFormOpen) {
-    return '';
-  }
-
-  return `
-    <form class="border rounded p-3 mb-3" data-role="install-super-form" data-hive-id="${hiveId}" novalidate>
-      <div class="vstack gap-3">
-        <div>
-          <label class="form-label" for="install-position-${hiveId}">${t('apiaries.hives.supers.install.position')}</label>
-          <select id="install-position-${hiveId}" name="position" class="form-select" required>
-            <option value="">${t('apiaries.hives.supers.install.choosePosition')}</option>
-            ${freePositions
-              .map(
-                (position) =>
-                  `<option value="${position}" ${String(panelState.installPosition) === String(position) ? 'selected' : ''}>${t('apiaries.hives.supers.positionLabel')} ${position}</option>`
-              )
-              .join('')}
-          </select>
-        </div>
-
-        <div>
-          <label class="form-label" for="install-notes-${hiveId}">${t('apiaries.hives.supers.install.notes')}</label>
-          <textarea id="install-notes-${hiveId}" name="notes" class="form-control" rows="2">${escapeHtml(panelState.installNotes || '')}</textarea>
-        </div>
-
-        <div class="d-flex flex-column flex-md-row gap-2">
-          <button type="submit" class="btn btn-primary w-100 w-md-auto" ${panelState.savingInstall ? 'disabled' : ''}>
-            ${
-              panelState.savingInstall
-                ? `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>${t('apiaries.hives.supers.actions.saving')}`
-                : t('common.save')
-            }
-          </button>
-          <button type="button" class="btn btn-outline-secondary w-100 w-md-auto" data-action="cancel-install-super" data-hive-id="${hiveId}" ${panelState.savingInstall ? 'disabled' : ''}>${t('common.cancel')}</button>
-        </div>
-      </div>
-    </form>
-  `;
-}
-
-function activeSupersMarkup(hiveId, panelState, activeSupers) {
-  if (!activeSupers.length) {
-    return `<p class="text-secondary mb-0">${t('apiaries.hives.supers.emptyActive')}</p>`;
-  }
-
-  return `
-    <div class="vstack gap-2">
-      ${activeSupers
-        .map((superItem) => {
-          const latestSnapshot = panelState.snapshotsBySuper[superItem.id]?.[0] || null;
-          const fullnessText = latestSnapshot ? `${Number(latestSnapshot.honey_fullness).toFixed(1)}%` : '-';
-          const kgText = latestSnapshot ? formatKgFromFullness(latestSnapshot.honey_fullness) : '-';
-          const savingSnapshot = Boolean(panelState.savingSnapshotBySuper[superItem.id]);
-          const savingRemove = Boolean(panelState.savingRemoveBySuper[superItem.id]);
-
-          return `
-            <div class="border rounded p-3">
-              <div class="d-flex flex-column flex-md-row justify-content-between gap-2 mb-2">
-                <div>
-                  <p class="mb-1 fw-semibold">${t('apiaries.hives.supers.positionLabel')} ${superItem.position}</p>
-                  <p class="mb-0 small text-secondary">${t('apiaries.hives.supers.installedAt')}: ${formatDate(superItem.installed_at)}</p>
-                </div>
-                <div class="text-md-end">
-                  <p class="mb-1 small">${t('apiaries.hives.supers.lastFullness')}: <strong>${fullnessText}</strong></p>
-                  <p class="mb-0 small">${t('apiaries.hives.supers.estimatedKg')}: <strong>${kgText}</strong></p>
-                </div>
-              </div>
-
-              <form class="vstack gap-2" data-role="super-snapshot-form" data-hive-id="${hiveId}" data-super-id="${superItem.id}" novalidate>
-                <div>
-                  <label class="form-label" for="snapshot-fullness-${superItem.id}">${t('apiaries.hives.supers.fullnessInput')}</label>
-                  <input id="snapshot-fullness-${superItem.id}" name="honey_fullness" type="number" min="0" max="200" step="0.01" class="form-control" required />
-                </div>
-                <div>
-                  <label class="form-label" for="snapshot-notes-${superItem.id}">${t('apiaries.hives.supers.snapshotNotes')}</label>
-                  <input id="snapshot-notes-${superItem.id}" name="notes" class="form-control" />
-                </div>
-                <div class="d-flex flex-column flex-md-row gap-2">
-                  <button type="submit" class="btn btn-outline-primary w-100 w-md-auto" ${savingSnapshot ? 'disabled' : ''}>
-                    ${
-                      savingSnapshot
-                        ? `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>${t('apiaries.hives.supers.actions.saving')}`
-                        : t('apiaries.hives.supers.saveSnapshot')
-                    }
-                  </button>
-                  <button type="button" class="btn btn-outline-danger w-100 w-md-auto" data-action="remove-super" data-hive-id="${hiveId}" data-super-id="${superItem.id}" ${savingRemove ? 'disabled' : ''}>
-                    ${
-                      savingRemove
-                        ? `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>${t('apiaries.hives.supers.actions.saving')}`
-                        : t('apiaries.hives.supers.removeButton')
-                    }
-                  </button>
-                </div>
-              </form>
-            </div>
-          `;
-        })
-        .join('')}
-    </div>
-  `;
-}
-
 function hiveSupersPanelMarkup(hive, panelState) {
   if (!panelState.expanded) {
     return '';
   }
 
-  if (panelState.supersLoading) {
-    return `
-      <div class="pt-3">
-        <div class="border rounded p-3">
-          <p class="mb-0 text-secondary">${t('common.loading')}</p>
-        </div>
-      </div>
-    `;
-  }
-
-  const activeSupers = panelState.supers.filter((superItem) => !superItem.removed_at);
-  const freePositions = getFreeSuperPositions(activeSupers);
-
-  return `
-    <div class="pt-3">
-      <div class="border rounded p-3">
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
-          <h3 class="h6 mb-0">${t('apiaries.hives.supers.title')}</h3>
-          <button type="button" class="btn btn-outline-primary w-100 w-md-auto" data-action="toggle-install-super" data-hive-id="${hive.id}" ${freePositions.length ? '' : 'disabled'}>
-            ${t('apiaries.hives.supers.addButton')}
-          </button>
-        </div>
-
-        ${
-          !freePositions.length
-            ? `<p class="small text-secondary mb-3">${t('apiaries.hives.supers.noFreePositions')}</p>`
-            : ''
-        }
-
-        ${superInstallFormMarkup(hive.id, panelState, freePositions)}
-        ${activeSupersMarkup(hive.id, panelState, activeSupers)}
-      </div>
-    </div>
-  `;
+  return renderSupersSection(hive.id);
 }
 
 function hiveInspectionsPanelMarkup(hive, panelState) {
@@ -492,6 +321,15 @@ function renderHivesSection() {
     const panelState = getHivePanelState(hive.id);
     if (!panelState.expanded) {
       return;
+    }
+
+    const supersContainerEl = document.getElementById(`hive-supers-section-${hive.id}`);
+    if (supersContainerEl) {
+      void initSupersSection({
+        hiveId: hive.id,
+        containerEl: supersContainerEl,
+        onChanged: () => initApiarySummary(currentApiaryId)
+      });
     }
 
     const containerEl = document.getElementById(`hive-inspections-section-${hive.id}`);
@@ -603,33 +441,6 @@ async function loadHives() {
   }
 }
 
-async function loadSupersForHive(hiveId) {
-  const panelState = getHivePanelState(hiveId);
-  panelState.supersLoading = true;
-  renderHivesSection();
-
-  try {
-    const supers = await listSupersByHive(hiveId);
-    panelState.supers = supers;
-
-    const activeSupers = supers.filter((superItem) => !superItem.removed_at);
-    const snapshotEntries = await Promise.all(
-      activeSupers.map(async (superItem) => {
-        const snapshots = await listSnapshotsBySuper(superItem.id, 1);
-        return [superItem.id, snapshots];
-      })
-    );
-
-    panelState.snapshotsBySuper = Object.fromEntries(snapshotEntries);
-    panelState.hasLoadedSupers = true;
-  } catch (error) {
-    showToast(getSupersFriendlyErrorMessage(error), t('common.error'));
-  } finally {
-    panelState.supersLoading = false;
-    renderHivesSection();
-  }
-}
-
 async function handleEditSubmit(formElement) {
   const formData = new FormData(formElement);
   const name = String(formData.get('name') || '').trim();
@@ -697,134 +508,6 @@ async function handleHiveSubmit(formElement) {
     showToast(getHivesFriendlyErrorMessage(error), t('common.error'));
   } finally {
     setHiveSubmitState(false);
-  }
-}
-
-async function handleInstallSuperSubmit(formElement) {
-  const hiveId = formElement.getAttribute('data-hive-id');
-  if (!hiveId) {
-    return;
-  }
-
-  const panelState = getHivePanelState(hiveId);
-  if (panelState.savingInstall) {
-    return;
-  }
-
-  const formData = new FormData(formElement);
-  const position = Number(formData.get('position'));
-  const notes = formData.get('notes');
-
-  if (!position || Number.isNaN(position)) {
-    showToast(t('apiaries.hives.supers.errors.positionRequired'), t('common.error'));
-    return;
-  }
-
-  const activeSupers = panelState.supers.filter((superItem) => !superItem.removed_at);
-  const freePositions = getFreeSuperPositions(activeSupers);
-  if (!freePositions.includes(position)) {
-    showToast(t('apiaries.hives.supers.errors.positionTaken'), t('common.error'));
-    return;
-  }
-
-  try {
-    panelState.savingInstall = true;
-    renderHivesSection();
-
-    await installSuper({
-      hive_id: hiveId,
-      position,
-      notes
-    });
-
-    panelState.installFormOpen = false;
-    panelState.installPosition = '';
-    panelState.installNotes = '';
-
-    showToast(t('apiaries.hives.supers.toasts.installSuccess'), t('common.success'));
-    await loadSupersForHive(hiveId);
-    await initApiarySummary(currentApiaryId);
-  } catch (error) {
-    showToast(getSupersFriendlyErrorMessage(error), t('common.error'));
-  } finally {
-    panelState.savingInstall = false;
-    renderHivesSection();
-  }
-}
-
-async function handleSuperSnapshotSubmit(formElement) {
-  const hiveId = formElement.getAttribute('data-hive-id');
-  const superId = formElement.getAttribute('data-super-id');
-  if (!hiveId || !superId) {
-    return;
-  }
-
-  const panelState = getHivePanelState(hiveId);
-  if (panelState.savingSnapshotBySuper[superId]) {
-    return;
-  }
-
-  const formData = new FormData(formElement);
-  const fullnessRaw = String(formData.get('honey_fullness') || '').trim();
-  const honeyFullness = Number(fullnessRaw.replaceAll(',', '.'));
-
-  if (!fullnessRaw || Number.isNaN(honeyFullness)) {
-    showToast(t('apiaries.hives.supers.errors.fullnessRequired'), t('common.error'));
-    return;
-  }
-
-  if (honeyFullness < 0 || honeyFullness > 200) {
-    showToast(t('apiaries.hives.supers.errors.fullnessRange'), t('common.error'));
-    return;
-  }
-
-  try {
-    panelState.savingSnapshotBySuper[superId] = true;
-    renderHivesSection();
-
-    await createSnapshot({
-      super_id: superId,
-      honey_fullness: honeyFullness,
-      notes: formData.get('notes')
-    });
-
-    showToast(t('apiaries.hives.supers.toasts.snapshotSuccess'), t('common.success'));
-    formElement.reset();
-    await loadSupersForHive(hiveId);
-    await initApiarySummary(currentApiaryId);
-  } catch (error) {
-    showToast(getSupersFriendlyErrorMessage(error), t('common.error'));
-  } finally {
-    panelState.savingSnapshotBySuper[superId] = false;
-    renderHivesSection();
-  }
-}
-
-async function handleRemoveSuper(hiveId, superId) {
-  const panelState = getHivePanelState(hiveId);
-  if (panelState.savingRemoveBySuper[superId]) {
-    return;
-  }
-
-  const confirmed = window.confirm(t('apiaries.hives.supers.confirmRemove'));
-  if (!confirmed) {
-    return;
-  }
-
-  try {
-    panelState.savingRemoveBySuper[superId] = true;
-    renderHivesSection();
-
-    await removeSuper(superId);
-
-    showToast(t('apiaries.hives.supers.toasts.removeSuccess'), t('common.success'));
-    await loadSupersForHive(hiveId);
-    await initApiarySummary(currentApiaryId);
-  } catch (error) {
-    showToast(getSupersFriendlyErrorMessage(error), t('common.error'));
-  } finally {
-    panelState.savingRemoveBySuper[superId] = false;
-    renderHivesSection();
   }
 }
 
@@ -986,46 +669,8 @@ export function init() {
       }
 
       renderHivesSection();
-
-      if (panelState.expanded && !panelState.hasLoadedSupers) {
-        void loadSupersForHive(hiveId);
-      }
       return;
     }
-
-    if (action === 'toggle-install-super') {
-      const hiveId = actionElement.getAttribute('data-hive-id');
-      if (!hiveId) {
-        return;
-      }
-
-      const panelState = getHivePanelState(hiveId);
-      panelState.installFormOpen = !panelState.installFormOpen;
-      renderHivesSection();
-      return;
-    }
-
-    if (action === 'cancel-install-super') {
-      const hiveId = actionElement.getAttribute('data-hive-id');
-      if (!hiveId) {
-        return;
-      }
-
-      const panelState = getHivePanelState(hiveId);
-      panelState.installFormOpen = false;
-      renderHivesSection();
-      return;
-    }
-
-    if (action === 'remove-super') {
-      const hiveId = actionElement.getAttribute('data-hive-id');
-      const superId = actionElement.getAttribute('data-super-id');
-      if (hiveId && superId) {
-        void handleRemoveSuper(hiveId, superId);
-      }
-      return;
-    }
-
   });
 
   pageElement.addEventListener('submit', (event) => {
@@ -1042,20 +687,6 @@ export function init() {
     if (apiaryFormElement) {
       event.preventDefault();
       void handleEditSubmit(apiaryFormElement);
-      return;
-    }
-
-    const installSuperFormElement = event.target.closest('form[data-role="install-super-form"]');
-    if (installSuperFormElement) {
-      event.preventDefault();
-      void handleInstallSuperSubmit(installSuperFormElement);
-      return;
-    }
-
-    const snapshotFormElement = event.target.closest('form[data-role="super-snapshot-form"]');
-    if (snapshotFormElement) {
-      event.preventDefault();
-      void handleSuperSnapshotSubmit(snapshotFormElement);
       return;
     }
 
