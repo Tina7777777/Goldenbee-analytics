@@ -1,3 +1,8 @@
 .analytics-page .page-card {
-  max-width: 920px;
+  height: 100%;
+}
+
+.analytics-page .table th,
+.analytics-page .table td {
+  vertical-align: middle;
 }

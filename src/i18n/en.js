@@ -182,6 +182,38 @@ export const en = {
       missingConfig: 'Supabase configuration is missing. Check .env settings.'
     }
   },
+  analyticsReports: {
+    noData: 'No data',
+    calibration: {
+      title: 'Calibration: estimated vs actual harvest',
+      caption: 'Last 20 harvests'
+    },
+    trend: {
+      title: 'Fullness trend',
+      caption: 'Last 14 days'
+    },
+    columns: {
+      date: 'Date',
+      apiary: 'Apiary',
+      hive: 'Hive',
+      estimatedKg: 'Estimated (kg)',
+      actualKg: 'Actual (kg)',
+      deltaKg: 'Delta',
+      avgFullness: 'Avg fullness',
+      avgKgEstimate: 'Avg estimate (kg)',
+      snapshotsCount: 'Snapshots',
+      lastUpdated: 'Last updated'
+    },
+    empty: {
+      calibration: 'No harvest calibration data for this period.',
+      trend: 'No fullness data for this period.'
+    },
+    errors: {
+      generic: 'An error occurred while loading analytics.',
+      notAuthenticated: 'You must be signed in.',
+      missingConfig: 'Supabase configuration is missing. Check .env settings.'
+    }
+  },
   apiaries: {
     addButton: 'Add apiary',
     honeySummary: {

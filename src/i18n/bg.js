@@ -182,6 +182,38 @@ export const bg = {
       missingConfig: 'Липсва конфигурация за Supabase. Провери .env настройките.'
     }
   },
+  analyticsReports: {
+    noData: 'Няма данни',
+    calibration: {
+      title: 'Калибрация: оценка срещу реален добив',
+      caption: 'Последни 20 добива'
+    },
+    trend: {
+      title: 'Тренд на пълнотата',
+      caption: 'Последни 14 дни'
+    },
+    columns: {
+      date: 'Дата',
+      apiary: 'Пчелин',
+      hive: 'Кошер',
+      estimatedKg: 'Оценка (кг)',
+      actualKg: 'Реално (кг)',
+      deltaKg: 'Разлика',
+      avgFullness: 'Средна пълнота',
+      avgKgEstimate: 'Средна оценка (кг)',
+      snapshotsCount: 'Снимки',
+      lastUpdated: 'Последно обновяване'
+    },
+    empty: {
+      calibration: 'Няма данни за добиви за избрания период.',
+      trend: 'Няма данни за пълнота за избрания период.'
+    },
+    errors: {
+      generic: 'Възникна грешка при зареждане на анализите.',
+      notAuthenticated: 'Трябва да влезете в профила си.',
+      missingConfig: 'Липсва конфигурация за Supabase. Провери .env настройките.'
+    }
+  },
   apiaries: {
     addButton: 'Добави пчелин',
     honeySummary: {
