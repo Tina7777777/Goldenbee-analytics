@@ -1,15 +1,212 @@
 import './profile.css';
 import { t } from '../../i18n/i18n.js';
+import { showToast } from '../../components/toast/toast.js';
+import { getMyProfile, upsertMyProfile } from '../../services/profileService.js';
+
+let profile = null;
+let isLoading = false;
+let isSaving = false;
+
+function createDefaultProfileState() {
+  return {
+    display_name: '',
+    about: '',
+    location_text: '',
+    contacts: '',
+    is_public_profile: false,
+    show_location: false,
+    show_hive_count: false,
+    show_contacts: false
+  };
+}
+
+function toInputValue(value) {
+  return String(value || '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
+function getFriendlyErrorMessage(error) {
+  const message = String(error?.message || '').toLowerCase();
+
+  if (message.includes('not authenticated')) {
+    return t('profile.errors.notAuthenticated');
+  }
+
+  if (message.includes('configured')) {
+    return t('profile.errors.missingConfig');
+  }
+
+  return t('profile.errors.generic');
+}
+
+function checkboxChecked(value) {
+  return value ? 'checked' : '';
+}
+
+function loadingMarkup() {
+  return `
+    <div class="page-card">
+      <p class="mb-0 text-secondary">${t('common.loading')}</p>
+    </div>
+  `;
+}
+
+function formMarkup() {
+  const state = profile || createDefaultProfileState();
+
+  return `
+    <div class="page-card">
+      <form id="profile-form" class="vstack gap-3" novalidate>
+        <div>
+          <label class="form-label" for="profile-display-name">${t('profile.form.displayName')}</label>
+          <input id="profile-display-name" name="display_name" class="form-control" value="${toInputValue(state.display_name)}" />
+        </div>
+
+        <div>
+          <label class="form-label" for="profile-about">${t('profile.form.about')}</label>
+          <textarea id="profile-about" name="about" class="form-control" rows="4">${toInputValue(state.about)}</textarea>
+        </div>
+
+        <div>
+          <label class="form-label" for="profile-location">${t('profile.form.location')}</label>
+          <input id="profile-location" name="location_text" class="form-control" value="${toInputValue(state.location_text)}" />
+        </div>
+
+        <div>
+          <label class="form-label" for="profile-contacts">${t('profile.form.contacts')}</label>
+          <textarea id="profile-contacts" name="contacts" class="form-control" rows="3">${toInputValue(state.contacts)}</textarea>
+        </div>
+
+        <div class="vstack gap-2 profile-switches">
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="profile-is-public" name="is_public_profile" ${checkboxChecked(state.is_public_profile)} />
+            <label class="form-check-label" for="profile-is-public">${t('profile.form.isPublicProfile')}</label>
+          </div>
+
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="profile-show-location" name="show_location" ${checkboxChecked(state.show_location)} />
+            <label class="form-check-label" for="profile-show-location">${t('profile.form.showLocation')}</label>
+          </div>
+
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="profile-show-hive-count" name="show_hive_count" ${checkboxChecked(state.show_hive_count)} />
+            <label class="form-check-label" for="profile-show-hive-count">${t('profile.form.showHiveCount')}</label>
+          </div>
+
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="profile-show-contacts" name="show_contacts" ${checkboxChecked(state.show_contacts)} />
+            <label class="form-check-label" for="profile-show-contacts">${t('profile.form.showContacts')}</label>
+          </div>
+        </div>
+
+        <div>
+          <button type="submit" class="btn btn-primary" id="profile-submit" ${isSaving ? 'disabled' : ''}>
+            ${
+              isSaving
+                ? `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>${t('profile.actions.saving')}`
+                : t('common.save')
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  `;
+}
+
+function renderContent() {
+  const contentEl = document.getElementById('profile-content');
+  if (!contentEl) {
+    return;
+  }
+
+  contentEl.innerHTML = isLoading ? loadingMarkup() : formMarkup();
+}
+
+async function loadProfile() {
+  isLoading = true;
+  renderContent();
+
+  try {
+    const result = await getMyProfile();
+    profile = {
+      ...createDefaultProfileState(),
+      ...(result || {})
+    };
+  } catch (error) {
+    profile = createDefaultProfileState();
+    showToast(getFriendlyErrorMessage(error), t('common.error'));
+  } finally {
+    isLoading = false;
+    renderContent();
+  }
+}
+
+async function handleProfileSubmit(formElement) {
+  const formData = new FormData(formElement);
+
+  try {
+    isSaving = true;
+    renderContent();
+
+    const result = await upsertMyProfile({
+      display_name: formData.get('display_name'),
+      about: formData.get('about'),
+      location_text: formData.get('location_text'),
+      contacts: formData.get('contacts'),
+      is_public_profile: formData.get('is_public_profile') !== null,
+      show_location: formData.get('show_location') !== null,
+      show_hive_count: formData.get('show_hive_count') !== null,
+      show_contacts: formData.get('show_contacts') !== null
+    });
+
+    profile = {
+      ...createDefaultProfileState(),
+      ...(result || {})
+    };
+
+    showToast(t('profile.toasts.saveSuccess'), t('common.success'));
+  } catch (error) {
+    showToast(getFriendlyErrorMessage(error), t('common.error'));
+  } finally {
+    isSaving = false;
+    renderContent();
+  }
+}
 
 export function render() {
   return `
     <section class="profile-page">
       <h1 class="mb-4">${t('pages.profile.title')}</h1>
-      <div class="page-card">
-        <p class="mb-0">${t('pages.profile.description')}</p>
-      </div>
+      <div id="profile-content"></div>
     </section>
   `;
 }
 
-export function init() {}
+export function init() {
+  const pageElement = document.querySelector('.profile-page');
+  if (!pageElement) {
+    return;
+  }
+
+  profile = createDefaultProfileState();
+  isLoading = true;
+  isSaving = false;
+  renderContent();
+  void loadProfile();
+
+  pageElement.addEventListener('submit', (event) => {
+    const formElement = event.target.closest('#profile-form');
+    if (!formElement || !pageElement.contains(formElement)) {
+      return;
+    }
+
+    event.preventDefault();
+    if (!isSaving) {
+      void handleProfileSubmit(formElement);
+    }
+  });
+}

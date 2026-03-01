@@ -96,6 +96,29 @@ export const en = {
       description: 'The page you requested does not exist.'
     }
   },
+  profile: {
+    form: {
+      displayName: 'Display name',
+      about: 'About',
+      location: 'Location',
+      contacts: 'Contacts',
+      isPublicProfile: 'Public profile',
+      showLocation: 'Show location',
+      showHiveCount: 'Show hive count',
+      showContacts: 'Show contacts'
+    },
+    actions: {
+      saving: 'Saving...'
+    },
+    toasts: {
+      saveSuccess: 'Profile saved successfully.'
+    },
+    errors: {
+      generic: 'An error occurred while working with profile.',
+      notAuthenticated: 'You must be signed in.',
+      missingConfig: 'Supabase configuration is missing. Check .env settings.'
+    }
+  },
   apiaries: {
     addButton: 'Add apiary',
     honeySummary: {

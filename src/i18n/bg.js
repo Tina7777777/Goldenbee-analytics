@@ -96,6 +96,29 @@ export const bg = {
       description: 'Страницата, която търсите, не съществува.'
     }
   },
+  profile: {
+    form: {
+      displayName: 'Име за показване',
+      about: 'За мен',
+      location: 'Локация',
+      contacts: 'Контакти',
+      isPublicProfile: 'Публичен профил',
+      showLocation: 'Покажи локация',
+      showHiveCount: 'Покажи брой кошери',
+      showContacts: 'Покажи контакти'
+    },
+    actions: {
+      saving: 'Запазване...'
+    },
+    toasts: {
+      saveSuccess: 'Профилът е запазен успешно.'
+    },
+    errors: {
+      generic: 'Възникна грешка при работа с профила.',
+      notAuthenticated: 'Трябва да влезете в профила си.',
+      missingConfig: 'Липсва конфигурация за Supabase. Провери .env настройките.'
+    }
+  },
   apiaries: {
     addButton: 'Добави пчелин',
     honeySummary: {
