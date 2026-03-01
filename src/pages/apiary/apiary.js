@@ -1,6 +1,6 @@
 import './apiary.css';
 import { Modal } from 'bootstrap';
-import { t } from '../../i18n/i18n.js';
+import { getLanguage, t } from '../../i18n/i18n.js';
 import { showToast } from '../../components/toast/toast.js';
 import { getApiaryCurrentHoneyKg } from '../../services/apiaryAnalyticsService.js';
 import { deleteApiary, getApiaryById, updateApiary } from '../../services/apiaryService.js';
@@ -27,7 +27,8 @@ let isHoneyEstimateLoading = false;
 let honeyEstimate = {
   totalKg: 0,
   supersCount: 0,
-  supersWithSnapshotsCount: 0
+  supersWithSnapshotsCount: 0,
+  lastSnapshotAt: null
 };
 
 function createDefaultHivePanelState() {
@@ -141,6 +142,18 @@ function formatKgFromFullness(fullness) {
 
 function formatTotalKg(value) {
   return Number(value || 0).toFixed(1);
+}
+
+function formatLastUpdated(value) {
+  if (!value) {
+    return t('apiaries.honeySummary.noData');
+  }
+
+  const locale = getLanguage() === 'en' ? 'en-US' : 'bg-BG';
+  return new Intl.DateTimeFormat(locale, {
+    dateStyle: 'medium',
+    timeStyle: 'short'
+  }).format(new Date(value));
 }
 
 function getFriendlyErrorMessage(error) {
@@ -503,7 +516,8 @@ function honeySummaryMarkup() {
       <h2 class="h6 mb-2">${t('apiaries.honeySummary.title')}</h2>
       <p class="display-6 mb-2">${formatTotalKg(honeyEstimate.totalKg)} ${t('apiaries.hives.supers.kgUnit')}</p>
       <p class="small text-secondary mb-1">${t('apiaries.honeySummary.activeSupers')}: ${honeyEstimate.supersCount}</p>
-      <p class="small text-secondary mb-0">${t('apiaries.honeySummary.withData')}: ${honeyEstimate.supersWithSnapshotsCount}</p>
+      <p class="small text-secondary mb-1">${t('apiaries.honeySummary.withData')}: ${honeyEstimate.supersWithSnapshotsCount}</p>
+      <p class="small text-secondary mb-0">${t('apiaries.honeySummary.lastUpdated')}: ${formatLastUpdated(honeyEstimate.lastSnapshotAt)}</p>
     </div>
   `;
 }
@@ -921,7 +935,8 @@ export function init() {
   honeyEstimate = {
     totalKg: 0,
     supersCount: 0,
-    supersWithSnapshotsCount: 0
+    supersWithSnapshotsCount: 0,
+    lastSnapshotAt: null
   };
 
   renderContent();

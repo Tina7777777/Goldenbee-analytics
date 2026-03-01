@@ -35,7 +35,8 @@ export async function getApiaryCurrentHoneyKg(apiaryId) {
     return {
       totalKg: 0,
       supersCount: 0,
-      supersWithSnapshotsCount: 0
+      supersWithSnapshotsCount: 0,
+      lastSnapshotAt: null
     };
   }
 
@@ -63,9 +64,21 @@ export async function getApiaryCurrentHoneyKg(apiaryId) {
     return sum + fullness / 10;
   }, 0);
 
+  let lastSnapshotAt = null;
+  latestSnapshotBySuperId.forEach((snapshot) => {
+    if (!snapshot?.snapshot_at) {
+      return;
+    }
+
+    if (!lastSnapshotAt || new Date(snapshot.snapshot_at) > new Date(lastSnapshotAt)) {
+      lastSnapshotAt = snapshot.snapshot_at;
+    }
+  });
+
   return {
     totalKg,
     supersCount: superIds.length,
-    supersWithSnapshotsCount: latestSnapshotBySuperId.size
+    supersWithSnapshotsCount: latestSnapshotBySuperId.size,
+    lastSnapshotAt
   };
 }

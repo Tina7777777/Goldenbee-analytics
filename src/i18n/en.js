@@ -101,7 +101,9 @@ export const en = {
     honeySummary: {
       title: 'Current honey estimate',
       activeSupers: 'Active supers',
-      withData: 'With data'
+      withData: 'With data',
+      lastUpdated: 'Last updated',
+      noData: 'No data'
     },
     createdAt: 'Created at',
     empty: 'No apiaries added yet.',

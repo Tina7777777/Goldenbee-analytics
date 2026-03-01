@@ -101,7 +101,9 @@ export const bg = {
     honeySummary: {
       title: 'Текуща оценка мед',
       activeSupers: 'Активни магазини',
-      withData: 'С данни'
+      withData: 'С данни',
+      lastUpdated: 'Последно обновено',
+      noData: 'Няма данни'
     },
     createdAt: 'Създаден на',
     empty: 'Няма добавени пчелини.',
