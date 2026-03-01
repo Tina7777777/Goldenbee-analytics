@@ -1,6 +1,7 @@
 export const en = {
   app: {
-    name: 'GoldenBee Analytics'
+    name: 'GoldenBee Analytics',
+    loading: 'Loading...'
   },
   nav: {
     home: 'Home',
@@ -23,6 +24,7 @@ export const en = {
     info: 'Info',
     success: 'Success',
     error: 'Error',
+    loading: 'Loading...',
     save: 'Save',
     cancel: 'Cancel'
   },

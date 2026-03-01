@@ -6,6 +6,7 @@ import { createApiary, deleteApiary, listMyApiaries, updateApiary } from '../../
 let apiaries = [];
 let isCreateVisible = false;
 let editingApiaryId = null;
+let isLoading = false;
 
 function formatDate(value) {
   if (!value) {
@@ -124,6 +125,11 @@ function renderList() {
     return;
   }
 
+  if (isLoading) {
+    listElement.innerHTML = `<div class="page-card"><p class="mb-0 text-secondary">${t('common.loading')}</p></div>`;
+    return;
+  }
+
   if (!apiaries.length) {
     listElement.innerHTML = `<div class="page-card"><p class="mb-0 text-secondary">${t('apiaries.empty')}</p></div>`;
     return;
@@ -151,11 +157,16 @@ function renderState() {
 }
 
 async function loadApiaries() {
+  isLoading = true;
+  renderList();
+
   try {
     apiaries = await listMyApiaries();
-    renderList();
   } catch (error) {
     showToast(getFriendlyErrorMessage(error), t('common.error'));
+  } finally {
+    isLoading = false;
+    renderList();
   }
 }
 
@@ -169,6 +180,11 @@ async function handleCreateSubmit(form) {
   }
 
   try {
+    const submitButton = form.querySelector('button[type="submit"]');
+    if (submitButton) {
+      submitButton.disabled = true;
+    }
+
     await createApiary({
       name,
       location_text: formData.get('location_text'),
@@ -181,6 +197,11 @@ async function handleCreateSubmit(form) {
     renderCreateSection();
   } catch (error) {
     showToast(getFriendlyErrorMessage(error), t('common.error'));
+  } finally {
+    const submitButton = form.querySelector('button[type="submit"]');
+    if (submitButton) {
+      submitButton.disabled = false;
+    }
   }
 }
 
@@ -199,6 +220,11 @@ async function handleEditSubmit(form) {
   }
 
   try {
+    const submitButton = form.querySelector('button[type="submit"]');
+    if (submitButton) {
+      submitButton.disabled = true;
+    }
+
     await updateApiary(apiaryId, {
       name,
       location_text: formData.get('location_text'),
@@ -210,6 +236,11 @@ async function handleEditSubmit(form) {
     await loadApiaries();
   } catch (error) {
     showToast(getFriendlyErrorMessage(error), t('common.error'));
+  } finally {
+    const submitButton = form.querySelector('button[type="submit"]');
+    if (submitButton) {
+      submitButton.disabled = false;
+    }
   }
 }
 
@@ -251,6 +282,7 @@ export function init() {
   apiaries = [];
   isCreateVisible = false;
   editingApiaryId = null;
+  isLoading = true;
   renderState();
   void loadApiaries();
 

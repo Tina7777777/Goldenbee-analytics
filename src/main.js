@@ -7,9 +7,27 @@ import { onAuthStateChange } from './services/authService.js';
 
 initI18n();
 
+function localizeInitialLoader() {
+  const loaderText = document.getElementById('app-shell-loader-text');
+  if (loaderText) {
+    loaderText.textContent = t('app.loading');
+  }
+}
+
+function removeInitialLoader() {
+  const loaderElement = document.getElementById('app-shell-loader');
+  if (loaderElement) {
+    loaderElement.remove();
+  }
+}
+
+localizeInitialLoader();
+
 const router = createRouter({
   appSelector: '#app',
   onRouteResolved: ({ route, session }) => {
+    removeInitialLoader();
+
     renderNavbar({
       active: route.navKey,
       isAdmin: session.isAdmin,

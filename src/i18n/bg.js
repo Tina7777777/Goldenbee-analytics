@@ -1,6 +1,7 @@
 export const bg = {
   app: {
-    name: 'GoldenBee Analytics'
+    name: 'GoldenBee Analytics',
+    loading: 'Зареждане...'
   },
   nav: {
     home: 'Начало',
@@ -23,6 +24,7 @@ export const bg = {
     info: 'Инфо',
     success: 'Успех',
     error: 'Грешка',
+    loading: 'Зареждане...',
     save: 'Запази',
     cancel: 'Отказ'
   },

@@ -2,10 +2,12 @@ import './apiary.css';
 import { t } from '../../i18n/i18n.js';
 import { showToast } from '../../components/toast/toast.js';
 import { deleteApiary, getApiaryById, updateApiary } from '../../services/apiaryService.js';
+import { navigate } from '../../utils/navigation.js';
 
 let currentApiaryId = '';
 let currentApiary = null;
 let isEditMode = false;
+let isLoading = false;
 
 function formatDate(value) {
   if (!value) {
@@ -30,11 +32,6 @@ function getFriendlyErrorMessage(error) {
   }
 
   return t('apiaries.errors.generic');
-}
-
-function navigateTo(path) {
-  window.history.pushState({}, '', path);
-  window.dispatchEvent(new PopStateEvent('popstate'));
 }
 
 function escapeHtml(value) {
@@ -104,6 +101,11 @@ function renderContent() {
     return;
   }
 
+  if (isLoading) {
+    contentElement.innerHTML = `<div class="page-card"><p class="mb-0 text-secondary">${t('common.loading')}</p></div>`;
+    return;
+  }
+
   if (!currentApiary) {
     contentElement.innerHTML = `<div class="page-card"><p class="mb-0 text-secondary">${t('apiaries.errors.notFound')}</p></div>`;
     return;
@@ -113,17 +115,21 @@ function renderContent() {
 }
 
 async function loadApiary() {
+  isLoading = true;
+  renderContent();
+
   try {
     currentApiary = await getApiaryById(currentApiaryId);
     if (!currentApiary) {
       showToast(t('apiaries.errors.notFound'), t('common.error'));
-      navigateTo('/apiaries');
+      navigate('/apiaries', { replace: true });
       return;
     }
-
-    renderContent();
   } catch (error) {
     showToast(getFriendlyErrorMessage(error), t('common.error'));
+  } finally {
+    isLoading = false;
+    renderContent();
   }
 }
 
@@ -137,6 +143,11 @@ async function handleEditSubmit(formElement) {
   }
 
   try {
+    const submitButton = formElement.querySelector('button[type="submit"]');
+    if (submitButton) {
+      submitButton.disabled = true;
+    }
+
     currentApiary = await updateApiary(currentApiaryId, {
       name,
       location_text: formData.get('location_text'),
@@ -148,6 +159,11 @@ async function handleEditSubmit(formElement) {
     showToast(t('apiaries.toasts.updateSuccess'), t('common.success'));
   } catch (error) {
     showToast(getFriendlyErrorMessage(error), t('common.error'));
+  } finally {
+    const submitButton = formElement.querySelector('button[type="submit"]');
+    if (submitButton) {
+      submitButton.disabled = false;
+    }
   }
 }
 
@@ -160,7 +176,7 @@ async function handleDelete() {
   try {
     await deleteApiary(currentApiaryId);
     showToast(t('apiaries.toasts.deleteSuccess'), t('common.success'));
-    navigateTo('/apiaries');
+    navigate('/apiaries', { replace: true });
   } catch (error) {
     showToast(getFriendlyErrorMessage(error), t('common.error'));
   }
@@ -180,6 +196,7 @@ export function render(params = {}) {
 export function init() {
   isEditMode = false;
   currentApiary = null;
+  isLoading = true;
   renderContent();
   void loadApiary();
 
