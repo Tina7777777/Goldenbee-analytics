@@ -4,12 +4,12 @@ import { t } from '../../i18n/i18n.js';
 import { showToast } from '../../components/toast/toast.js';
 import { deleteApiary, getApiaryById, updateApiary } from '../../services/apiaryService.js';
 import { createHive, deleteHive, listHivesByApiary, updateHive } from '../../services/hivesService.js';
-import { createInspection, deleteInspection, listInspectionsByHive } from '../../services/inspectionsService.js';
 import { createSnapshot } from '../../services/superSnapshotsService.js';
 import { listSnapshotsBySuper } from '../../services/superSnapshotsService.js';
 import { installSuper, listSupersByHive, removeSuper } from '../../services/supersService.js';
 import { navigate } from '../../utils/navigation.js';
 import { initApiarySummary, renderApiarySummary } from './apiarySummary.js';
+import { initInspectionsSection, renderInspectionsSection } from './inspectionsSection.js';
 
 let currentApiaryId = '';
 let currentApiary = null;
@@ -21,9 +21,6 @@ let isHivesLoading = false;
 let editingHiveId = null;
 let hiveModalInstance = null;
 let isHiveSaving = false;
-let inspectionModalInstance = null;
-let currentInspectionHiveId = '';
-let isInspectionSaving = false;
 
 let hivePanelsState = {};
 let requestedHiveId = '';
@@ -40,11 +37,7 @@ function createDefaultHivePanelState() {
     installNotes: '',
     savingInstall: false,
     savingRemoveBySuper: {},
-    savingSnapshotBySuper: {},
-    inspectionsLoading: false,
-    hasLoadedInspections: false,
-    inspections: [],
-    deletingInspectionById: {}
+    savingSnapshotBySuper: {}
   };
 }
 
@@ -113,10 +106,6 @@ async function expandHiveFromUrl(scroll = false) {
 
   if (!panelState.hasLoadedSupers) {
     await loadSupersForHive(requestedHiveId);
-  }
-
-  if (!panelState.hasLoadedInspections) {
-    await loadInspectionsForHive(requestedHiveId);
   }
 
   if (scroll) {
@@ -189,25 +178,6 @@ function getSupersFriendlyErrorMessage(error) {
   }
 
   return t('apiaries.hives.supers.errors.generic');
-}
-
-function getInspectionsFriendlyErrorMessage(error) {
-  const message = String(error?.message || '').toLowerCase();
-
-  if (message.includes('not authenticated')) {
-    return t('apiaries.hives.inspections.errors.notAuthenticated');
-  }
-
-  if (message.includes('configured')) {
-    return t('apiaries.hives.inspections.errors.missingConfig');
-  }
-
-  return t('apiaries.hives.inspections.errors.generic');
-}
-
-function getSwarmingStateLabel(value) {
-  const state = String(value || 'none');
-  return t(`apiaries.hives.inspections.swarming.${state}`);
 }
 
 function escapeHtml(value) {
@@ -285,75 +255,6 @@ function hiveModalMarkup() {
               <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">${t('common.cancel')}</button>
               <button type="submit" class="btn btn-primary" id="hive-modal-submit">
                 <span data-role="hive-submit-text">${t('common.save')}</span>
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-function inspectionModalMarkup() {
-  return `
-    <div class="modal fade" id="inspection-modal" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content">
-          <form id="inspection-modal-form" novalidate>
-            <div class="modal-header">
-              <h2 class="modal-title fs-5">${t('apiaries.hives.inspections.newButton')}</h2>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body vstack gap-3">
-              <div class="row g-2">
-                <div class="col-12 col-md-4">
-                  <label class="form-label" for="inspection-brood-frames">${t('apiaries.hives.inspections.form.broodFrames')}</label>
-                  <input id="inspection-brood-frames" name="brood_frames" type="number" min="0" class="form-control" />
-                </div>
-                <div class="col-12 col-md-4">
-                  <label class="form-label" for="inspection-honey-pollen-frames">${t('apiaries.hives.inspections.form.honeyPollenFrames')}</label>
-                  <input id="inspection-honey-pollen-frames" name="honey_pollen_frames" type="number" min="0" class="form-control" />
-                </div>
-                <div class="col-12 col-md-4">
-                  <label class="form-label" for="inspection-total-frames">${t('apiaries.hives.inspections.form.totalFrames')}</label>
-                  <input id="inspection-total-frames" name="total_frames" type="number" min="0" class="form-control" />
-                </div>
-              </div>
-
-              <div>
-                <label class="form-label" for="inspection-swarming-state">${t('apiaries.hives.inspections.form.swarmingState')}</label>
-                <select id="inspection-swarming-state" name="swarming_state" class="form-select">
-                  <option value="none">${t('apiaries.hives.inspections.swarming.none')}</option>
-                  <option value="suspected">${t('apiaries.hives.inspections.swarming.suspected')}</option>
-                  <option value="swarmed">${t('apiaries.hives.inspections.swarming.swarmed')}</option>
-                  <option value="split">${t('apiaries.hives.inspections.swarming.split')}</option>
-                </select>
-              </div>
-
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="true" id="inspection-eggs-present" name="eggs_present" />
-                <label class="form-check-label" for="inspection-eggs-present">${t('apiaries.hives.inspections.form.eggsPresent')}</label>
-              </div>
-
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="true" id="inspection-queen-seen" name="queen_seen" />
-                <label class="form-check-label" for="inspection-queen-seen">${t('apiaries.hives.inspections.form.queenSeen')}</label>
-              </div>
-
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="true" id="inspection-important" name="important" />
-                <label class="form-check-label" for="inspection-important">${t('apiaries.hives.inspections.form.important')}</label>
-              </div>
-
-              <div>
-                <label class="form-label" for="inspection-notes">${t('apiaries.hives.inspections.form.notes')}</label>
-                <textarea id="inspection-notes" name="notes" rows="3" class="form-control"></textarea>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">${t('common.cancel')}</button>
-              <button type="submit" class="btn btn-primary" id="inspection-modal-submit">
-                <span data-role="inspection-submit-text">${t('common.save')}</span>
               </button>
             </div>
           </form>
@@ -513,77 +414,12 @@ function hiveSupersPanelMarkup(hive, panelState) {
   `;
 }
 
-function inspectionsSummaryMarkup(inspection) {
-  return `${t('apiaries.hives.inspections.summary.brood')}: ${inspection.brood_frames ?? '-'} • ${t('apiaries.hives.inspections.summary.honeyPollen')}: ${inspection.honey_pollen_frames ?? '-'} • ${t('apiaries.hives.inspections.summary.total')}: ${inspection.total_frames ?? '-'}`;
-}
-
-function inspectionsListMarkup(hiveId, panelState) {
-  if (panelState.inspectionsLoading) {
-    return `<p class="mb-0 text-secondary">${t('common.loading')}</p>`;
-  }
-
-  if (!panelState.inspections.length) {
-    return `<p class="mb-0 text-secondary">${t('apiaries.hives.inspections.empty')}</p>`;
-  }
-
-  return `
-    <div class="vstack gap-2">
-      ${panelState.inspections
-        .slice(0, 3)
-        .map((inspection) => {
-          const isImportant = Boolean(inspection.important);
-          const deleting = Boolean(panelState.deletingInspectionById[inspection.id]);
-
-          return `
-            <article class="rounded p-3 ${isImportant ? 'border border-warning-subtle bg-warning-subtle' : 'border'}">
-              <div class="d-flex flex-column flex-md-row justify-content-between gap-2 mb-1">
-                <p class="mb-0 fw-semibold">${formatDate(inspection.inspected_at || inspection.created_at)}</p>
-                ${
-                  isImportant
-                    ? `<span class="badge text-bg-warning align-self-start align-self-md-center">${t('apiaries.hives.inspections.importantBadge')}</span>`
-                    : ''
-                }
-              </div>
-              <p class="mb-1 small">${inspectionsSummaryMarkup(inspection)}</p>
-              <p class="mb-1 small text-secondary">${t('apiaries.hives.inspections.summary.swarming')}: ${getSwarmingStateLabel(inspection.swarming_state)}</p>
-              <p class="mb-2 small text-secondary">${t('apiaries.hives.inspections.summary.flags')}: ${inspection.eggs_present ? t('apiaries.hives.inspections.summary.yes') : t('apiaries.hives.inspections.summary.no')} / ${inspection.queen_seen ? t('apiaries.hives.inspections.summary.yes') : t('apiaries.hives.inspections.summary.no')}</p>
-              ${inspection.notes ? `<p class="mb-2 small">${escapeHtml(inspection.notes)}</p>` : ''}
-              <div class="d-flex justify-content-end">
-                <button type="button" class="btn btn-sm btn-outline-danger" data-action="delete-inspection" data-hive-id="${hiveId}" data-inspection-id="${inspection.id}" ${deleting ? 'disabled' : ''}>
-                  ${
-                    deleting
-                      ? `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>${t('apiaries.hives.inspections.actions.saving')}`
-                      : t('apiaries.hives.inspections.deleteButton')
-                  }
-                </button>
-              </div>
-            </article>
-          `;
-        })
-        .join('')}
-    </div>
-  `;
-}
-
 function hiveInspectionsPanelMarkup(hive, panelState) {
   if (!panelState.expanded) {
     return '';
   }
 
-  return `
-    <div class="pt-3">
-      <div class="border rounded p-3">
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
-          <h3 class="h6 mb-0">${t('apiaries.hives.inspections.title')}</h3>
-          <button type="button" class="btn btn-outline-primary w-100 w-md-auto" data-action="open-inspection-create" data-hive-id="${hive.id}">
-            ${t('apiaries.hives.inspections.newButton')}
-          </button>
-        </div>
-
-        ${inspectionsListMarkup(hive.id, panelState)}
-      </div>
-    </div>
-  `;
+  return renderInspectionsSection(hive.id);
 }
 
 function hivesSectionMarkup() {
@@ -651,6 +487,23 @@ function renderHivesSection() {
   }
 
   hivesElement.innerHTML = hivesSectionMarkup();
+
+  hives.forEach((hive) => {
+    const panelState = getHivePanelState(hive.id);
+    if (!panelState.expanded) {
+      return;
+    }
+
+    const containerEl = document.getElementById(`hive-inspections-section-${hive.id}`);
+    if (!containerEl) {
+      return;
+    }
+
+    initInspectionsSection({
+      hiveId: hive.id,
+      containerEl
+    });
+  });
 }
 
 function setHiveSubmitState(saving) {
@@ -665,21 +518,6 @@ function setHiveSubmitState(saving) {
   submitButton.disabled = saving;
   submitText.innerHTML = saving
     ? `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>${t('apiaries.hives.actions.saving')}`
-    : t('common.save');
-}
-
-function setInspectionSubmitState(saving) {
-  isInspectionSaving = saving;
-
-  const submitButton = document.getElementById('inspection-modal-submit');
-  const submitText = document.querySelector('[data-role="inspection-submit-text"]');
-  if (!submitButton || !submitText) {
-    return;
-  }
-
-  submitButton.disabled = saving;
-  submitText.innerHTML = saving
-    ? `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>${t('apiaries.hives.inspections.actions.saving')}`
     : t('common.save');
 }
 
@@ -702,28 +540,6 @@ function openHiveModal(mode, hive = null) {
 
   setHiveSubmitState(false);
   hiveModalInstance.show();
-}
-
-function openInspectionModal(hiveId) {
-  if (!inspectionModalInstance || !hiveId) {
-    return;
-  }
-
-  const formElement = document.getElementById('inspection-modal-form');
-  if (!formElement) {
-    return;
-  }
-
-  currentInspectionHiveId = hiveId;
-  formElement.reset();
-
-  const swarmingSelect = document.getElementById('inspection-swarming-state');
-  if (swarmingSelect) {
-    swarmingSelect.value = 'none';
-  }
-
-  setInspectionSubmitState(false);
-  inspectionModalInstance.show();
 }
 
 function renderContent() {
@@ -810,22 +626,6 @@ async function loadSupersForHive(hiveId) {
     showToast(getSupersFriendlyErrorMessage(error), t('common.error'));
   } finally {
     panelState.supersLoading = false;
-    renderHivesSection();
-  }
-}
-
-async function loadInspectionsForHive(hiveId) {
-  const panelState = getHivePanelState(hiveId);
-  panelState.inspectionsLoading = true;
-  renderHivesSection();
-
-  try {
-    panelState.inspections = await listInspectionsByHive(hiveId, 5);
-    panelState.hasLoadedInspections = true;
-  } catch (error) {
-    showToast(getInspectionsFriendlyErrorMessage(error), t('common.error'));
-  } finally {
-    panelState.inspectionsLoading = false;
     renderHivesSection();
   }
 }
@@ -1028,74 +828,6 @@ async function handleRemoveSuper(hiveId, superId) {
   }
 }
 
-async function handleInspectionSubmit(formElement) {
-  if (!currentInspectionHiveId) {
-    return;
-  }
-
-  const formData = new FormData(formElement);
-
-  const parseOptionalNumber = (value) => {
-    const normalized = String(value || '').trim();
-    if (!normalized) {
-      return null;
-    }
-
-    const parsed = Number(normalized.replaceAll(',', '.'));
-    return Number.isNaN(parsed) ? null : parsed;
-  };
-
-  try {
-    setInspectionSubmitState(true);
-
-    await createInspection({
-      hive_id: currentInspectionHiveId,
-      brood_frames: parseOptionalNumber(formData.get('brood_frames')),
-      honey_pollen_frames: parseOptionalNumber(formData.get('honey_pollen_frames')),
-      total_frames: parseOptionalNumber(formData.get('total_frames')),
-      swarming_state: formData.get('swarming_state') || 'none',
-      eggs_present: formData.get('eggs_present') !== null,
-      queen_seen: formData.get('queen_seen') !== null,
-      important: formData.get('important') !== null,
-      notes: String(formData.get('notes') || '').trim() || null
-    });
-
-    const hiveId = currentInspectionHiveId;
-    inspectionModalInstance?.hide();
-    showToast(t('apiaries.hives.inspections.toasts.createSuccess'), t('common.success'));
-    await loadInspectionsForHive(hiveId);
-  } catch (error) {
-    showToast(getInspectionsFriendlyErrorMessage(error), t('common.error'));
-  } finally {
-    setInspectionSubmitState(false);
-  }
-}
-
-async function handleInspectionDelete(hiveId, inspectionId) {
-  const panelState = getHivePanelState(hiveId);
-  if (panelState.deletingInspectionById[inspectionId]) {
-    return;
-  }
-
-  const confirmed = window.confirm(t('apiaries.hives.inspections.confirmDelete'));
-  if (!confirmed) {
-    return;
-  }
-
-  try {
-    panelState.deletingInspectionById[inspectionId] = true;
-    renderHivesSection();
-
-    await deleteInspection(inspectionId);
-    showToast(t('apiaries.hives.inspections.toasts.deleteSuccess'), t('common.success'));
-    await loadInspectionsForHive(hiveId);
-  } catch (error) {
-    showToast(getInspectionsFriendlyErrorMessage(error), t('common.error'));
-  } finally {
-    panelState.deletingInspectionById[inspectionId] = false;
-    renderHivesSection();
-  }
-}
 
 async function handleDelete() {
   const confirmed = window.confirm(t('apiaries.confirmDelete'));
@@ -1141,7 +873,6 @@ export function render(params = {}) {
       <h1 class="mb-4">${t('pages.apiary.title')}</h1>
       <div id="apiary-content"></div>
       ${hiveModalMarkup()}
-      ${inspectionModalMarkup()}
     </section>
   `;
 }
@@ -1177,15 +908,6 @@ export function init() {
     modalElement.addEventListener('hidden.bs.modal', () => {
       editingHiveId = null;
       setHiveSubmitState(false);
-    });
-  }
-
-  const inspectionModalElement = document.getElementById('inspection-modal');
-  if (inspectionModalElement) {
-    inspectionModalInstance = Modal.getOrCreateInstance(inspectionModalElement);
-    inspectionModalElement.addEventListener('hidden.bs.modal', () => {
-      currentInspectionHiveId = '';
-      setInspectionSubmitState(false);
     });
   }
 
@@ -1268,19 +990,6 @@ export function init() {
       if (panelState.expanded && !panelState.hasLoadedSupers) {
         void loadSupersForHive(hiveId);
       }
-
-      if (panelState.expanded && !panelState.hasLoadedInspections) {
-        void loadInspectionsForHive(hiveId);
-      }
-
-      return;
-    }
-
-    if (action === 'open-inspection-create') {
-      const hiveId = actionElement.getAttribute('data-hive-id');
-      if (hiveId) {
-        openInspectionModal(hiveId);
-      }
       return;
     }
 
@@ -1317,13 +1026,6 @@ export function init() {
       return;
     }
 
-    if (action === 'delete-inspection') {
-      const hiveId = actionElement.getAttribute('data-hive-id');
-      const inspectionId = actionElement.getAttribute('data-inspection-id');
-      if (hiveId && inspectionId) {
-        void handleInspectionDelete(hiveId, inspectionId);
-      }
-    }
   });
 
   pageElement.addEventListener('submit', (event) => {
@@ -1357,12 +1059,5 @@ export function init() {
       return;
     }
 
-    const inspectionFormElement = event.target.closest('#inspection-modal-form');
-    if (inspectionFormElement) {
-      event.preventDefault();
-      if (!isInspectionSaving) {
-        void handleInspectionSubmit(inspectionFormElement);
-      }
-    }
   });
 }
