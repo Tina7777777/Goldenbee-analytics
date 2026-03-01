@@ -186,11 +186,20 @@ export const en = {
     noData: 'No data',
     calibration: {
       title: 'Calibration: estimated vs actual harvest',
-      caption: 'Last 20 harvests'
+      caption: 'Last up to 20 harvests'
     },
     trend: {
       title: 'Fullness trend',
-      caption: 'Last 14 days'
+      caption: 'Average values per apiary'
+    },
+    filters: {
+      title: 'Period filter',
+      period: 'Period',
+      days7: '7 days',
+      days14: '14 days',
+      days30: '30 days',
+      days365: '1 year',
+      all: 'All time'
     },
     columns: {
       date: 'Date',

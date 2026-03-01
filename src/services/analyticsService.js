@@ -74,30 +74,38 @@ async function loadLookupMaps(userId) {
   };
 }
 
-export async function listRecentHarvestCalibration(limit = 20) {
+export async function listRecentHarvestCalibration(limit = 20, days = null) {
   ensureSupabaseClient();
   const userId = await getCurrentUserId();
 
+  const fromDateIso = Number.isInteger(days) && days > 0 ? daysAgoIso(days) : null;
+
+  let harvestsQuery = supabase
+    .from('harvests')
+    .select(
+      `
+      id,
+      hive_id,
+      harvested_at,
+      actual_kg_total,
+      harvest_items (
+        estimated_kg,
+        frames_count,
+        fill_level
+      )
+    `
+    )
+    .eq('owner_id', userId)
+    .order('harvested_at', { ascending: false })
+    .limit(limit);
+
+  if (fromDateIso) {
+    harvestsQuery = harvestsQuery.gte('harvested_at', fromDateIso);
+  }
+
   const [maps, { data: harvests, error: harvestsError }] = await Promise.all([
     loadLookupMaps(userId),
-    supabase
-      .from('harvests')
-      .select(
-        `
-        id,
-        hive_id,
-        harvested_at,
-        actual_kg_total,
-        harvest_items (
-          estimated_kg,
-          frames_count,
-          fill_level
-        )
-      `
-      )
-      .eq('owner_id', userId)
-      .order('harvested_at', { ascending: false })
-      .limit(limit)
+    harvestsQuery
   ]);
 
   if (harvestsError) {
@@ -131,14 +139,21 @@ export async function listRecentFullnessTrend(days = 14) {
   ensureSupabaseClient();
   const userId = await getCurrentUserId();
 
+  const fromDateIso = Number.isInteger(days) && days > 0 ? daysAgoIso(days) : null;
+
+  let snapshotsQuery = supabase
+    .from('super_snapshots')
+    .select('id, super_id, snapshot_at, honey_fullness')
+    .eq('owner_id', userId)
+    .order('snapshot_at', { ascending: false });
+
+  if (fromDateIso) {
+    snapshotsQuery = snapshotsQuery.gte('snapshot_at', fromDateIso);
+  }
+
   const [maps, { data: snapshots, error: snapshotsError }] = await Promise.all([
     loadLookupMaps(userId),
-    supabase
-      .from('super_snapshots')
-      .select('id, super_id, snapshot_at, honey_fullness')
-      .eq('owner_id', userId)
-      .gte('snapshot_at', daysAgoIso(days))
-      .order('snapshot_at', { ascending: false })
+    snapshotsQuery
   ]);
 
   if (snapshotsError) {

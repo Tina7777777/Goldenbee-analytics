@@ -5,9 +5,11 @@ import { listRecentFullnessTrend, listRecentHarvestCalibration } from '../../ser
 
 const HARVEST_CALIBRATION_LIMIT = 20;
 const FULLNESS_TREND_DAYS = 14;
+const PERIOD_OPTIONS = ['7', '14', '30', '365', 'all'];
 
 let isLoading = false;
 let reportData = createDefaultReportData();
+let selectedPeriod = String(FULLNESS_TREND_DAYS);
 
 function createDefaultReportData() {
   return {
@@ -38,6 +40,19 @@ function formatDate(value) {
 
 function formatKg(value) {
   return Number(value || 0).toFixed(1);
+}
+
+function getSelectedPeriodDays() {
+  if (selectedPeriod === 'all') {
+    return null;
+  }
+
+  const parsed = Number(selectedPeriod);
+  if (!Number.isInteger(parsed) || parsed <= 0) {
+    return FULLNESS_TREND_DAYS;
+  }
+
+  return parsed;
 }
 
 function getFriendlyErrorMessage(error) {
@@ -161,11 +176,25 @@ function trendTableMarkup() {
 }
 
 function reportsMarkup() {
+  const selectedLabel = t(`analyticsReports.filters.${selectedPeriod === 'all' ? 'all' : `days${selectedPeriod}`}`);
+
   return `
+    <section class="page-card mb-3">
+      <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-2">
+        <h2 class="h6 mb-0">${t('analyticsReports.filters.title')}</h2>
+        <div class="d-flex align-items-center gap-2">
+          <label class="small text-secondary mb-0" for="analytics-period-select">${t('analyticsReports.filters.period')}</label>
+          <select id="analytics-period-select" class="form-select form-select-sm">
+            ${PERIOD_OPTIONS.map((option) => `<option value="${option}" ${selectedPeriod === option ? 'selected' : ''}>${t(`analyticsReports.filters.${option === 'all' ? 'all' : `days${option}`}`)}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+    </section>
+
     <section class="page-card mb-3">
       <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2 mb-3">
         <h2 class="h5 mb-0">${t('analyticsReports.calibration.title')}</h2>
-        <span class="text-secondary small">${t('analyticsReports.calibration.caption')}</span>
+        <span class="text-secondary small">${t('analyticsReports.calibration.caption')} (${selectedLabel})</span>
       </div>
       ${calibrationTableMarkup()}
     </section>
@@ -173,7 +202,7 @@ function reportsMarkup() {
     <section class="page-card">
       <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2 mb-3">
         <h2 class="h5 mb-0">${t('analyticsReports.trend.title')}</h2>
-        <span class="text-secondary small">${t('analyticsReports.trend.caption')}</span>
+        <span class="text-secondary small">${t('analyticsReports.trend.caption')} (${selectedLabel})</span>
       </div>
       ${trendTableMarkup()}
     </section>
@@ -202,9 +231,11 @@ async function loadReports() {
   renderContent();
 
   try {
+    const selectedDays = getSelectedPeriodDays();
+
     const [calibrationRows, trendRows] = await Promise.all([
-      listRecentHarvestCalibration(HARVEST_CALIBRATION_LIMIT),
-      listRecentFullnessTrend(FULLNESS_TREND_DAYS)
+      listRecentHarvestCalibration(HARVEST_CALIBRATION_LIMIT, selectedDays),
+      listRecentFullnessTrend(selectedDays)
     ]);
 
     reportData = {
@@ -232,6 +263,27 @@ export function render() {
 export function init() {
   reportData = createDefaultReportData();
   isLoading = true;
+  selectedPeriod = String(FULLNESS_TREND_DAYS);
   renderContent();
   void loadReports();
+
+  const pageElement = document.querySelector('.analytics-page');
+  if (!pageElement) {
+    return;
+  }
+
+  pageElement.addEventListener('change', (event) => {
+    const selectElement = event.target.closest('#analytics-period-select');
+    if (!selectElement || !pageElement.contains(selectElement)) {
+      return;
+    }
+
+    const nextValue = String(selectElement.value || '');
+    if (!PERIOD_OPTIONS.includes(nextValue) || nextValue === selectedPeriod) {
+      return;
+    }
+
+    selectedPeriod = nextValue;
+    void loadReports();
+  });
 }
