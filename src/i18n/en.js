@@ -153,6 +153,46 @@ export const en = {
         codeExists: 'A hive with this code already exists.',
         notAuthenticated: 'You must be signed in.',
         missingConfig: 'Supabase configuration is missing. Check .env settings.'
+      },
+      supers: {
+        title: 'Supers',
+        addButton: 'Add super',
+        removeButton: 'Remove super',
+        saveSnapshot: 'Save',
+        positionLabel: 'Position',
+        installedAt: 'Installed at',
+        lastFullness: 'Last fullness',
+        estimatedKg: 'Estimated kg',
+        kgUnit: 'kg',
+        fullnessInput: 'Fullness (%)',
+        snapshotNotes: 'Notes',
+        emptyActive: 'No active supers.',
+        noFreePositions: 'No free positions (1-5).',
+        confirmRemove: 'Are you sure you want to remove this super?',
+        install: {
+          position: 'Position',
+          choosePosition: 'Choose position',
+          notes: 'Notes'
+        },
+        actions: {
+          expand: 'Show details',
+          collapse: 'Hide details',
+          saving: 'Saving...'
+        },
+        toasts: {
+          installSuccess: 'Super installed successfully.',
+          removeSuccess: 'Super removed successfully.',
+          snapshotSuccess: 'Fullness snapshot saved successfully.'
+        },
+        errors: {
+          generic: 'An error occurred while working with supers.',
+          positionRequired: 'Position is required.',
+          positionTaken: 'Selected position is already taken.',
+          fullnessRequired: 'Fullness is required.',
+          fullnessRange: 'Fullness must be between 0 and 200.',
+          notAuthenticated: 'You must be signed in.',
+          missingConfig: 'Supabase configuration is missing. Check .env settings.'
+        }
       }
     }
   }

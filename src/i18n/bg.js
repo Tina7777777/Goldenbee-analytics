@@ -153,6 +153,46 @@ export const bg = {
         codeExists: 'Вече съществува кошер с този код.',
         notAuthenticated: 'Трябва да влезете в профила си.',
         missingConfig: 'Липсва конфигурация за Supabase. Провери .env настройките.'
+      },
+      supers: {
+        title: 'Магазини',
+        addButton: 'Добави магазин',
+        removeButton: 'Махни магазин',
+        saveSnapshot: 'Запиши',
+        positionLabel: 'Позиция',
+        installedAt: 'Поставен на',
+        lastFullness: 'Последна пълнота',
+        estimatedKg: 'Оценка кг',
+        kgUnit: 'кг',
+        fullnessInput: 'Пълнота (%)',
+        snapshotNotes: 'Бележки',
+        emptyActive: 'Няма активни магазини.',
+        noFreePositions: 'Няма свободни позиции (1-5).',
+        confirmRemove: 'Сигурни ли сте, че искате да махнете този магазин?',
+        install: {
+          position: 'Позиция',
+          choosePosition: 'Избери позиция',
+          notes: 'Бележки'
+        },
+        actions: {
+          expand: 'Покажи детайли',
+          collapse: 'Скрий детайли',
+          saving: 'Запазване...'
+        },
+        toasts: {
+          installSuccess: 'Магазинът е добавен успешно.',
+          removeSuccess: 'Магазинът е махнат успешно.',
+          snapshotSuccess: 'Пълнотата е записана успешно.'
+        },
+        errors: {
+          generic: 'Възникна грешка при работа с магазините.',
+          positionRequired: 'Позицията е задължителна.',
+          positionTaken: 'Избраната позиция е заета.',
+          fullnessRequired: 'Пълнотата е задължителна.',
+          fullnessRange: 'Пълнотата трябва да е между 0 и 200.',
+          notAuthenticated: 'Трябва да влезете в профила си.',
+          missingConfig: 'Липсва конфигурация за Supabase. Провери .env настройките.'
+        }
       }
     }
   }
