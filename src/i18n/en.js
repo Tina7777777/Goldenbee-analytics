@@ -119,6 +119,40 @@ export const en = {
       missingConfig: 'Supabase configuration is missing. Check .env settings.'
     }
   },
+  home: {
+    summary: {
+      apiaries: 'Apiaries',
+      hives: 'Hives',
+      currentHoney: 'Current honey (kg)',
+      lastUpdated: 'Last updated',
+      noData: 'No data'
+    },
+    activity: {
+      empty: 'No recent activity yet.',
+      unknownApiary: 'Unknown apiary',
+      snapshots: {
+        title: 'Recent super snapshots',
+        fullness: 'Fullness'
+      },
+      inspections: {
+        title: 'Recent inspections'
+      },
+      harvests: {
+        title: 'Recent harvests',
+        actualKg: 'Actual harvest'
+      }
+    },
+    quickActions: {
+      title: 'Quick actions',
+      openApiaries: 'Open apiaries',
+      newApiary: 'Add apiary'
+    },
+    errors: {
+      generic: 'An error occurred while loading the home dashboard.',
+      notAuthenticated: 'You must be signed in.',
+      missingConfig: 'Supabase configuration is missing. Check .env settings.'
+    }
+  },
   apiaries: {
     addButton: 'Add apiary',
     honeySummary: {
