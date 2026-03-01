@@ -126,6 +126,34 @@ export const en = {
       nameRequired: 'Apiary name is required.',
       notAuthenticated: 'You must be signed in.',
       missingConfig: 'Supabase configuration is missing. Check .env settings.'
+    },
+    hives: {
+      title: 'Hives',
+      empty: 'No hives added yet.',
+      addButton: 'Add hive',
+      editButton: 'Edit',
+      deleteButton: 'Delete',
+      codeLabel: 'Code',
+      confirmDelete: 'Are you sure you want to delete this hive?',
+      form: {
+        code: 'Hive code',
+        notes: 'Notes'
+      },
+      actions: {
+        saving: 'Saving...'
+      },
+      toasts: {
+        createSuccess: 'Hive created successfully.',
+        updateSuccess: 'Hive updated successfully.',
+        deleteSuccess: 'Hive deleted successfully.'
+      },
+      errors: {
+        generic: 'An error occurred while working with hives.',
+        codeRequired: 'Hive code is required.',
+        codeExists: 'A hive with this code already exists.',
+        notAuthenticated: 'You must be signed in.',
+        missingConfig: 'Supabase configuration is missing. Check .env settings.'
+      }
     }
   }
 };

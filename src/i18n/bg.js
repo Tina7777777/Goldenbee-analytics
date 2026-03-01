@@ -126,6 +126,34 @@ export const bg = {
       nameRequired: 'Името на пчелина е задължително.',
       notAuthenticated: 'Трябва да влезете в профила си.',
       missingConfig: 'Липсва конфигурация за Supabase. Провери .env настройките.'
+    },
+    hives: {
+      title: 'Кошери',
+      empty: 'Няма добавени кошери.',
+      addButton: 'Добави кошер',
+      editButton: 'Редактирай',
+      deleteButton: 'Изтрий',
+      codeLabel: 'Код',
+      confirmDelete: 'Сигурни ли сте, че искате да изтриете този кошер?',
+      form: {
+        code: 'Код на кошер',
+        notes: 'Бележки'
+      },
+      actions: {
+        saving: 'Запазване...'
+      },
+      toasts: {
+        createSuccess: 'Кошерът е създаден успешно.',
+        updateSuccess: 'Кошерът е обновен успешно.',
+        deleteSuccess: 'Кошерът е изтрит успешно.'
+      },
+      errors: {
+        generic: 'Възникна грешка при работа с кошерите.',
+        codeRequired: 'Кодът на кошера е задължителен.',
+        codeExists: 'Вече съществува кошер с този код.',
+        notAuthenticated: 'Трябва да влезете в профила си.',
+        missingConfig: 'Липсва конфигурация за Supabase. Провери .env настройките.'
+      }
     }
   }
 };
