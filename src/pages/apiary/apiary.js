@@ -21,6 +21,7 @@ let hiveModalInstance = null;
 let isHiveSaving = false;
 
 let hivePanelsState = {};
+let requestedHiveId = '';
 
 function createDefaultHivePanelState() {
   return {
@@ -54,6 +55,62 @@ function reconcileHivePanels() {
   });
 
   hivePanelsState = nextState;
+}
+
+function setHiveQueryParam(hiveId) {
+  const url = new URL(window.location.href);
+
+  if (hiveId) {
+    url.searchParams.set('hive', hiveId);
+  } else {
+    url.searchParams.delete('hive');
+  }
+
+  window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
+}
+
+function scrollHiveIntoView(hiveId) {
+  if (!window.matchMedia('(max-width: 767.98px)').matches) {
+    return;
+  }
+
+  const hiveElement = document.getElementById(`hive-item-${hiveId}`);
+  if (!hiveElement) {
+    return;
+  }
+
+  hiveElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+async function expandHiveFromUrl(scroll = false) {
+  if (!requestedHiveId) {
+    return;
+  }
+
+  const hiveExists = hives.some((hive) => hive.id === requestedHiveId);
+  if (!hiveExists) {
+    requestedHiveId = '';
+    setHiveQueryParam(null);
+    return;
+  }
+
+  Object.keys(hivePanelsState).forEach((hiveId) => {
+    hivePanelsState[hiveId].expanded = hiveId === requestedHiveId;
+  });
+
+  const panelState = getHivePanelState(requestedHiveId);
+  panelState.expanded = true;
+  renderHivesSection();
+
+  if (!panelState.hasLoadedSupers) {
+    await loadSupersForHive(requestedHiveId);
+  }
+
+  if (scroll) {
+    setTimeout(() => {
+      scrollHiveIntoView(requestedHiveId);
+    }, 80);
+  }
 }
 
 function formatDate(value) {
@@ -384,7 +441,7 @@ function hivesSectionMarkup() {
             const panelState = getHivePanelState(hive.id);
 
             return `
-              <div class="list-group-item">
+              <div class="list-group-item" id="hive-item-${hive.id}">
                 <div class="d-flex flex-column gap-3">
                   <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start gap-3">
                     <div>
@@ -507,6 +564,7 @@ async function loadHives() {
   try {
     hives = await listHivesByApiary(currentApiaryId);
     reconcileHivePanels();
+    await expandHiveFromUrl(true);
   } catch (error) {
     showToast(getHivesFriendlyErrorMessage(error), t('common.error'));
   } finally {
@@ -760,6 +818,10 @@ async function handleHiveDelete(hiveId) {
 
   try {
     await deleteHive(hiveId);
+    if (requestedHiveId === hiveId) {
+      requestedHiveId = '';
+      setHiveQueryParam(null);
+    }
     showToast(t('apiaries.hives.toasts.deleteSuccess'), t('common.success'));
     await loadHives();
   } catch (error) {
@@ -769,6 +831,7 @@ async function handleHiveDelete(hiveId) {
 
 export function render(params = {}) {
   currentApiaryId = params.id || '';
+  requestedHiveId = params.hive || '';
 
   return `
     <section class="apiary-page">
@@ -790,6 +853,10 @@ export function init() {
   isHiveSaving = false;
 
   hivePanelsState = {};
+
+  if (!requestedHiveId) {
+    requestedHiveId = new URLSearchParams(window.location.search).get('hive') || '';
+  }
 
   renderContent();
   void loadApiary();
@@ -866,7 +933,22 @@ export function init() {
       }
 
       const panelState = getHivePanelState(hiveId);
-      panelState.expanded = !panelState.expanded;
+      const nextExpanded = !panelState.expanded;
+
+      Object.keys(hivePanelsState).forEach((id) => {
+        hivePanelsState[id].expanded = false;
+      });
+
+      panelState.expanded = nextExpanded;
+
+      if (nextExpanded) {
+        requestedHiveId = hiveId;
+        setHiveQueryParam(hiveId);
+      } else {
+        requestedHiveId = '';
+        setHiveQueryParam(null);
+      }
+
       renderHivesSection();
 
       if (panelState.expanded && !panelState.hasLoadedSupers) {
