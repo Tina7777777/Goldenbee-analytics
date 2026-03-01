@@ -245,6 +245,46 @@ export const en = {
           notAuthenticated: 'You must be signed in.',
           missingConfig: 'Supabase configuration is missing. Check .env settings.'
         }
+      },
+      harvests: {
+        title: 'Harvests',
+        newButton: 'New harvest',
+        deleteButton: 'Delete',
+        empty: 'No harvests added.',
+        groupedItems: 'Grouped frames',
+        itemLabel: 'Group',
+        addRow: 'Add group',
+        removeRow: 'Remove',
+        framesCount: 'Frames count',
+        fillLevel: 'Fill level',
+        rowEstimated: 'Estimated',
+        computedTotal: 'Computed total',
+        estimatedTotal: 'Estimated total',
+        actualTotal: 'Actual total',
+        actualTotalOptional: 'Actual total (kg, optional)',
+        notes: 'Notes',
+        itemNotes: 'Group notes',
+        confirmDelete: 'Are you sure you want to delete this harvest?',
+        fillLevels: {
+          very_full: 'Very full',
+          full: 'Full',
+          medium: 'Medium',
+          low: 'Low',
+          almost_empty: 'Almost empty'
+        },
+        actions: {
+          saving: 'Saving...'
+        },
+        toasts: {
+          createSuccess: 'Harvest created successfully.',
+          deleteSuccess: 'Harvest deleted successfully.'
+        },
+        errors: {
+          generic: 'An error occurred while working with harvests.',
+          itemRequired: 'Please add at least one valid grouped item.',
+          notAuthenticated: 'You must be signed in.',
+          missingConfig: 'Supabase configuration is missing. Check .env settings.'
+        }
       }
     }
   }

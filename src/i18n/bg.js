@@ -245,6 +245,46 @@ export const bg = {
           notAuthenticated: 'Трябва да влезете в профила си.',
           missingConfig: 'Липсва конфигурация за Supabase. Провери .env настройките.'
         }
+      },
+      harvests: {
+        title: 'Добив',
+        newButton: 'Нов добив',
+        deleteButton: 'Изтрий',
+        empty: 'Няма въведени добиви.',
+        groupedItems: 'Групи рамки',
+        itemLabel: 'Група',
+        addRow: 'Добави група',
+        removeRow: 'Премахни',
+        framesCount: 'Брой рамки',
+        fillLevel: 'Ниво на запълване',
+        rowEstimated: 'Оценка',
+        computedTotal: 'Изчислен общ добив',
+        estimatedTotal: 'Оценка общо',
+        actualTotal: 'Реален добив',
+        actualTotalOptional: 'Реален добив (кг, по избор)',
+        notes: 'Бележки',
+        itemNotes: 'Бележки за групата',
+        confirmDelete: 'Сигурни ли сте, че искате да изтриете този добив?',
+        fillLevels: {
+          very_full: 'Много пълни',
+          full: 'Пълни',
+          medium: 'Средни',
+          low: 'Ниски',
+          almost_empty: 'Почти празни'
+        },
+        actions: {
+          saving: 'Запазване...'
+        },
+        toasts: {
+          createSuccess: 'Добивът е добавен успешно.',
+          deleteSuccess: 'Добивът е изтрит успешно.'
+        },
+        errors: {
+          generic: 'Възникна грешка при работа с добивите.',
+          itemRequired: 'Добавете поне една валидна група рамки.',
+          notAuthenticated: 'Трябва да влезете в профила си.',
+          missingConfig: 'Липсва конфигурация за Supabase. Провери .env настройките.'
+        }
       }
     }
   }

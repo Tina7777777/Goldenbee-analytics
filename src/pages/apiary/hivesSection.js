@@ -2,6 +2,7 @@ import { Modal } from 'bootstrap';
 import { t } from '../../i18n/i18n.js';
 import { showToast } from '../../components/toast/toast.js';
 import { createHive, deleteHive, listHivesByApiary, updateHive } from '../../services/hivesService.js';
+import { initHarvestsSection, renderHarvestsSection } from './harvestsSection.js';
 import { initInspectionsSection, renderInspectionsSection } from './inspectionsSection.js';
 import { initSupersSection, renderSupersSection } from './supersSection.js';
 
@@ -194,7 +195,7 @@ function hivesListMarkup() {
 
                   ${
                     panelState.expanded
-                      ? `${renderSupersSection(hive.id)}${renderInspectionsSection(hive.id)}`
+                      ? `${renderSupersSection(hive.id)}${renderInspectionsSection(hive.id)}${renderHarvestsSection(hive.id)}`
                       : ''
                   }
                 </div>
@@ -239,6 +240,19 @@ function renderHivesListOnly() {
       initInspectionsSection({
         hiveId: hive.id,
         containerEl: inspectionsContainerEl
+      });
+    }
+
+    const harvestsContainerEl = document.getElementById(`hive-harvests-section-${hive.id}`);
+    if (harvestsContainerEl) {
+      initHarvestsSection({
+        hiveId: hive.id,
+        containerEl: harvestsContainerEl,
+        onChanged: async () => {
+          if (typeof onDataChangedCallback === 'function') {
+            await onDataChangedCallback();
+          }
+        }
       });
     }
   });
