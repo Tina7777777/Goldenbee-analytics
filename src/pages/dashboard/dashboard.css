@@ -1,3 +1,7 @@
 .dashboard-page .page-card {
-  max-width: 920px;
+  height: 100%;
+}
+
+.dashboard-page .badge {
+  width: fit-content;
 }

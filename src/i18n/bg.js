@@ -153,6 +153,35 @@ export const bg = {
       missingConfig: 'Липсва конфигурация за Supabase. Провери .env настройките.'
     }
   },
+  board: {
+    noData: 'Няма данни',
+    summary: {
+      apiaries: 'Пчелини',
+      hives: 'Кошери',
+      currentHoney: 'Текущ мед (кг)',
+      importantInspections14d: 'Важни прегледи (14 дни)'
+    },
+    labels: {
+      hivesCount: 'Кошери',
+      currentHoney: 'Текущ мед',
+      lastUpdated: 'Последно обновяване'
+    },
+    actions: {
+      open: 'Отвори',
+      addInspection: 'Добави преглед',
+      addSnapshot: 'Добави пълнота',
+      addHarvest: 'Добави добив'
+    },
+    empty: {
+      message: 'Все още няма създадени пчелини.',
+      link: 'Към пчелини'
+    },
+    errors: {
+      generic: 'Възникна грешка при зареждане на таблото.',
+      notAuthenticated: 'Трябва да влезете в профила си.',
+      missingConfig: 'Липсва конфигурация за Supabase. Провери .env настройките.'
+    }
+  },
   apiaries: {
     addButton: 'Добави пчелин',
     honeySummary: {

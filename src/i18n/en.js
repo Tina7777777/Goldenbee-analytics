@@ -153,6 +153,35 @@ export const en = {
       missingConfig: 'Supabase configuration is missing. Check .env settings.'
     }
   },
+  board: {
+    noData: 'No data',
+    summary: {
+      apiaries: 'Apiaries',
+      hives: 'Hives',
+      currentHoney: 'Current honey (kg)',
+      importantInspections14d: 'Important inspections (14 days)'
+    },
+    labels: {
+      hivesCount: 'Hives',
+      currentHoney: 'Current honey',
+      lastUpdated: 'Last updated'
+    },
+    actions: {
+      open: 'Open',
+      addInspection: 'Add inspection',
+      addSnapshot: 'Add fullness',
+      addHarvest: 'Add harvest'
+    },
+    empty: {
+      message: 'No apiaries created yet.',
+      link: 'Go to apiaries'
+    },
+    errors: {
+      generic: 'An error occurred while loading the board.',
+      notAuthenticated: 'You must be signed in.',
+      missingConfig: 'Supabase configuration is missing. Check .env settings.'
+    }
+  },
   apiaries: {
     addButton: 'Add apiary',
     honeySummary: {
