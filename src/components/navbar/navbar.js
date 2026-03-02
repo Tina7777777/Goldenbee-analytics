@@ -6,15 +6,25 @@ import { setHtml } from '../../utils/dom.js';
 
 export function renderNavbar({ active = 'home', isAdmin = false, isAuthed = false, userEmail = '' } = {}) {
   const links = [
-    { key: 'home', href: '/', label: t('nav.home') },
+    { key: 'home', href: '/', label: t('nav.home'), guestOnly: true },
     { key: 'apiaries', href: '/apiaries', label: t('nav.apiaries'), authOnly: true },
-    { key: 'dashboard', href: '/dashboard', label: t('nav.dashboard') },
-    { key: 'analytics', href: '/analytics', label: t('nav.analytics') },
-    { key: 'profile', href: '/profile', label: t('nav.profile') }
+    { key: 'dashboard', href: '/dashboard', label: t('nav.dashboard'), authOnly: true },
+    { key: 'analytics', href: '/analytics', label: t('nav.analytics'), authOnly: true },
+    { key: 'profile', href: '/profile', label: t('nav.profile'), authOnly: true }
   ];
 
   const navItems = links
-    .filter((item) => !item.authOnly || isAuthed)
+    .filter((item) => {
+      if (item.authOnly && !isAuthed) {
+        return false;
+      }
+
+      if (item.guestOnly && isAuthed) {
+        return false;
+      }
+
+      return true;
+    })
     .map(
       ({ key, href, label }) => `
         <li class="nav-item">

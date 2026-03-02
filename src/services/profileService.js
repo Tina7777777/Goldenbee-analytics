@@ -65,6 +65,15 @@ function normalizeProfilePayload(payload = {}) {
   return normalized;
 }
 
+function normalizeProfileId(profileId) {
+  const normalized = String(profileId || '').trim();
+  if (!normalized) {
+    throw new Error('Profile id is required.');
+  }
+
+  return normalized;
+}
+
 export async function getMyProfile() {
   ensureSupabaseClient();
   const userId = await getCurrentUserId();
@@ -116,4 +125,40 @@ export async function upsertMyProfile(payload = {}) {
   }
 
   return insertedProfile;
+}
+
+export async function getPublicProfiles() {
+  ensureSupabaseClient();
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id,display_name,about,location_text,contacts,public_hive_count,show_location,show_hive_count,show_contacts,is_public_profile')
+    .eq('is_public_profile', true)
+    .order('display_name', { ascending: true, nullsFirst: false });
+
+  if (error) {
+    throw error;
+  }
+
+  return data || [];
+}
+
+export async function adminUnpublishProfile(profileId) {
+  ensureSupabaseClient();
+  await getCurrentUserId();
+  const normalizedProfileId = normalizeProfileId(profileId);
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .update({ is_public_profile: false })
+    .eq('id', normalizedProfileId)
+    .eq('is_public_profile', true)
+    .select('id,is_public_profile')
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
 }

@@ -2,15 +2,6 @@
   height: 100%;
 }
 
-.home-page .list-group-item {
-  border-left: 0;
-  border-right: 0;
-}
-
-.home-page .list-group-item:first-child {
-  border-top: 0;
-}
-
-.home-page .list-group-item:last-child {
-  border-bottom: 0;
+.home-page #home-directory-search {
+  max-width: 520px;
 }

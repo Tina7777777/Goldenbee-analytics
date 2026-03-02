@@ -1,22 +1,14 @@
 import './home.css';
 import { t } from '../../i18n/i18n.js';
 import { showToast } from '../../components/toast/toast.js';
-import { getHomeDashboardData } from '../../services/dashboardService.js';
+import { getPublicProfiles } from '../../services/profileService.js';
 
-let dashboardData = null;
+let allProfiles = [];
+let visibleProfiles = [];
+let searchTerm = '';
 let isLoading = false;
 
-function createDefaultDashboardData() {
-  return {
-    apiariesCount: 0,
-    hivesCount: 0,
-    currentHoneyKgTotal: 0,
-    lastUpdatedAt: null,
-    recentSnapshots: [],
-    recentInspections: [],
-    recentHarvests: []
-  };
-}
+const UNKNOWN_BEEKEEPER_LABEL = '—';
 
 function escapeHtml(value) {
   return String(value || '')
@@ -27,180 +19,13 @@ function escapeHtml(value) {
     .replaceAll("'", '&#39;');
 }
 
-function formatDate(value) {
-  if (!value) {
-    return t('home.summary.noData');
-  }
-
-  return new Intl.DateTimeFormat('bg-BG', {
-    dateStyle: 'medium',
-    timeStyle: 'short'
-  }).format(new Date(value));
-}
-
-function formatKg(value) {
-  return Number(value || 0).toFixed(1);
-}
-
 function getFriendlyErrorMessage(error) {
   const message = String(error?.message || '').toLowerCase();
-
-  if (message.includes('not authenticated')) {
-    return t('home.errors.notAuthenticated');
-  }
-
   if (message.includes('configured')) {
     return t('home.errors.missingConfig');
   }
 
   return t('home.errors.generic');
-}
-
-function summaryCardsMarkup() {
-  const data = dashboardData || createDefaultDashboardData();
-
-  return `
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-3 mb-4">
-      <div class="col">
-        <article class="page-card h-100">
-          <p class="text-secondary small mb-1">${t('home.summary.apiaries')}</p>
-          <p class="h3 mb-0">${data.apiariesCount}</p>
-        </article>
-      </div>
-      <div class="col">
-        <article class="page-card h-100">
-          <p class="text-secondary small mb-1">${t('home.summary.hives')}</p>
-          <p class="h3 mb-0">${data.hivesCount}</p>
-        </article>
-      </div>
-      <div class="col">
-        <article class="page-card h-100">
-          <p class="text-secondary small mb-1">${t('home.summary.currentHoney')}</p>
-          <p class="h3 mb-0">${formatKg(data.currentHoneyKgTotal)} ${t('apiaries.hives.supers.kgUnit')}</p>
-        </article>
-      </div>
-      <div class="col">
-        <article class="page-card h-100">
-          <p class="text-secondary small mb-1">${t('home.summary.lastUpdated')}</p>
-          <p class="mb-0 fw-semibold">${formatDate(data.lastUpdatedAt)}</p>
-        </article>
-      </div>
-    </div>
-  `;
-}
-
-function locationText(item) {
-  const apiaryName = item.apiary_name ? escapeHtml(item.apiary_name) : t('home.activity.unknownApiary');
-  const hiveCode = item.hive_code ? ` • ${t('apiaries.hives.codeLabel')}: ${escapeHtml(item.hive_code)}` : '';
-  return `${apiaryName}${hiveCode}`;
-}
-
-function snapshotsListMarkup() {
-  const items = (dashboardData?.recentSnapshots || []).slice(0, 5);
-  if (!items.length) {
-    return `<p class="mb-0 text-secondary">${t('home.activity.empty')}</p>`;
-  }
-
-  return `
-    <div class="list-group list-group-flush">
-      ${items
-        .map(
-          (item) => `
-        <article class="list-group-item px-0">
-          <p class="mb-1 fw-semibold">${formatDate(item.snapshot_at)}</p>
-          <p class="mb-1 small">${t('home.activity.snapshots.fullness')}: ${Number(item.honey_fullness ?? 0).toFixed(0)}%</p>
-          <p class="mb-0 small text-secondary">${locationText(item)}</p>
-        </article>
-      `
-        )
-        .join('')}
-    </div>
-  `;
-}
-
-function inspectionsListMarkup() {
-  const items = (dashboardData?.recentInspections || []).slice(0, 5);
-  if (!items.length) {
-    return `<p class="mb-0 text-secondary">${t('home.activity.empty')}</p>`;
-  }
-
-  return `
-    <div class="list-group list-group-flush">
-      ${items
-        .map(
-          (item) => `
-        <article class="list-group-item px-0">
-          <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
-            <p class="mb-0 fw-semibold">${formatDate(item.inspected_at)}</p>
-            ${item.important ? `<span class="badge text-bg-warning">${t('apiaries.hives.inspections.importantBadge')}</span>` : ''}
-          </div>
-          <p class="mb-0 small text-secondary">${locationText(item)}</p>
-        </article>
-      `
-        )
-        .join('')}
-    </div>
-  `;
-}
-
-function harvestsListMarkup() {
-  const items = (dashboardData?.recentHarvests || []).slice(0, 5);
-  if (!items.length) {
-    return `<p class="mb-0 text-secondary">${t('home.activity.empty')}</p>`;
-  }
-
-  return `
-    <div class="list-group list-group-flush">
-      ${items
-        .map(
-          (item) => `
-        <article class="list-group-item px-0">
-          <p class="mb-1 fw-semibold">${formatDate(item.harvested_at)}</p>
-          <p class="mb-1 small">${t('home.activity.harvests.actualKg')}: ${item.actual_kg_total === null || item.actual_kg_total === undefined ? '-' : `${formatKg(item.actual_kg_total)} ${t('apiaries.hives.supers.kgUnit')}`}</p>
-          <p class="mb-0 small text-secondary">${locationText(item)}</p>
-        </article>
-      `
-        )
-        .join('')}
-    </div>
-  `;
-}
-
-function activitySectionsMarkup() {
-  return `
-    <div class="row row-cols-1 row-cols-lg-3 g-3 mb-4">
-      <div class="col">
-        <section class="page-card h-100">
-          <h2 class="h6 mb-3">${t('home.activity.snapshots.title')}</h2>
-          ${snapshotsListMarkup()}
-        </section>
-      </div>
-      <div class="col">
-        <section class="page-card h-100">
-          <h2 class="h6 mb-3">${t('home.activity.inspections.title')}</h2>
-          ${inspectionsListMarkup()}
-        </section>
-      </div>
-      <div class="col">
-        <section class="page-card h-100">
-          <h2 class="h6 mb-3">${t('home.activity.harvests.title')}</h2>
-          ${harvestsListMarkup()}
-        </section>
-      </div>
-    </div>
-  `;
-}
-
-function quickActionsMarkup() {
-  return `
-    <section class="page-card">
-      <h2 class="h6 mb-3">${t('home.quickActions.title')}</h2>
-      <div class="d-flex flex-column flex-sm-row gap-2">
-        <a class="btn btn-primary w-100 w-sm-auto" href="/apiaries" data-link="spa">${t('home.quickActions.openApiaries')}</a>
-        <a class="btn btn-outline-primary w-100 w-sm-auto" href="/apiaries" data-link="spa">${t('home.quickActions.newApiary')}</a>
-      </div>
-    </section>
-  `;
 }
 
 function loadingMarkup() {
@@ -211,27 +36,89 @@ function loadingMarkup() {
   `;
 }
 
-function dashboardMarkup() {
-  return `${summaryCardsMarkup()}${activitySectionsMarkup()}${quickActionsMarkup()}`;
+function profileCardMarkup(profile) {
+  const displayName = profile.display_name ? escapeHtml(profile.display_name) : UNKNOWN_BEEKEEPER_LABEL;
+  const aboutMarkup = profile.about ? `<p class="mb-3">${escapeHtml(profile.about)}</p>` : '';
+
+  const locationMarkup = profile.show_location && profile.location_text
+    ? `<p class="mb-1"><span class="text-secondary">${t('home.directory.fields.location')}:</span> ${escapeHtml(profile.location_text)}</p>`
+    : '';
+
+  const contactsMarkup = profile.show_contacts && profile.contacts
+    ? `<p class="mb-1"><span class="text-secondary">${t('home.directory.fields.contacts')}:</span> ${escapeHtml(profile.contacts)}</p>`
+    : '';
+
+  const hiveCountMarkup = profile.show_hive_count && Number.isFinite(Number(profile.public_hive_count))
+    ? `<p class="mb-0"><span class="text-secondary">${t('home.directory.fields.hiveCount')}:</span> ${Number(profile.public_hive_count)}</p>`
+    : '';
+
+  return `
+    <div class="col">
+      <article class="page-card h-100">
+        <h2 class="h5 mb-3">${displayName}</h2>
+        ${aboutMarkup}
+        <div class="small">
+          ${locationMarkup}
+          ${contactsMarkup}
+          ${hiveCountMarkup}
+        </div>
+      </article>
+    </div>
+  `;
+}
+
+function directoryMarkup() {
+  if (!visibleProfiles.length) {
+    return `
+      <div class="page-card">
+        <p class="mb-0">${t('home.directory.empty')}</p>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="row row-cols-1 row-cols-lg-2 g-3">
+      ${visibleProfiles.map((profile) => profileCardMarkup(profile)).join('')}
+    </div>
+  `;
 }
 
 function renderContent() {
-  const contentEl = document.getElementById('home-dashboard-content');
+  const contentEl = document.getElementById('home-directory-content');
   if (!contentEl) {
     return;
   }
 
-  contentEl.innerHTML = isLoading ? loadingMarkup() : dashboardMarkup();
+  contentEl.innerHTML = isLoading ? loadingMarkup() : directoryMarkup();
 }
 
-async function loadDashboard() {
+function matchesSearch(profile, query) {
+  if (!query) {
+    return true;
+  }
+
+  const displayName = String(profile.display_name || '').toLowerCase();
+  const publicLocation = profile.show_location ? String(profile.location_text || '').toLowerCase() : '';
+
+  return displayName.includes(query) || publicLocation.includes(query);
+}
+
+function applySearchFilter() {
+  const query = searchTerm.trim().toLowerCase();
+  visibleProfiles = allProfiles.filter((profile) => matchesSearch(profile, query));
+  renderContent();
+}
+
+async function loadDirectory() {
   isLoading = true;
   renderContent();
 
   try {
-    dashboardData = await getHomeDashboardData();
+    allProfiles = await getPublicProfiles();
+    applySearchFilter();
   } catch (error) {
-    dashboardData = createDefaultDashboardData();
+    allProfiles = [];
+    visibleProfiles = [];
     showToast(getFriendlyErrorMessage(error), t('common.error'));
   } finally {
     isLoading = false;
@@ -243,14 +130,37 @@ export function render() {
   return `
     <section class="home-page">
       <h1 class="mb-4">${t('pages.home.title')}</h1>
-      <div id="home-dashboard-content"></div>
+      <p class="text-secondary mb-3">${t('pages.home.description')}</p>
+      <div class="page-card mb-3">
+        <label class="form-label" for="home-directory-search">${t('home.directory.searchLabel')}</label>
+        <input
+          id="home-directory-search"
+          type="search"
+          class="form-control"
+          placeholder="${t('home.directory.searchPlaceholder')}"
+          value="${escapeHtml(searchTerm)}"
+        />
+      </div>
+      <div id="home-directory-content"></div>
     </section>
   `;
 }
 
 export function init() {
-  dashboardData = createDefaultDashboardData();
+  allProfiles = [];
+  visibleProfiles = [];
+  searchTerm = '';
   isLoading = true;
   renderContent();
-  void loadDashboard();
+  void loadDirectory();
+
+  const searchInput = document.getElementById('home-directory-search');
+  if (!searchInput) {
+    return;
+  }
+
+  searchInput.addEventListener('input', (event) => {
+    searchTerm = String(event.target?.value || '');
+    applySearchFilter();
+  });
 }

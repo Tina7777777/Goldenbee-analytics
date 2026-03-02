@@ -52,7 +52,7 @@ export const bg = {
   pages: {
     home: {
       title: 'Начало',
-      description: 'Публичен начален екран за GoldenBee Analytics.'
+      description: 'Публичен регистър на пчелари, които са избрали да споделят данни.'
     },
     login: {
       title: 'Вход',
@@ -120,6 +120,16 @@ export const bg = {
     }
   },
   home: {
+    directory: {
+      searchLabel: 'Търсене по име или локация',
+      searchPlaceholder: 'Въведете име или локация...',
+      empty: 'Няма публични профили',
+      fields: {
+        location: 'Локация',
+        contacts: 'Контакти',
+        hiveCount: 'Публичен брой кошери'
+      }
+    },
     summary: {
       apiaries: 'Пчелини',
       hives: 'Кошери',
@@ -149,6 +159,25 @@ export const bg = {
     },
     errors: {
       generic: 'Възникна грешка при зареждане на началното табло.',
+      notAuthenticated: 'Трябва да влезете в профила си.',
+      missingConfig: 'Липсва конфигурация за Supabase. Провери .env настройките.'
+    }
+  },
+  admin: {
+    publicDirectory: {
+      title: 'Публични профили',
+      empty: 'Няма публични профили за преглед.',
+      unknownName: 'Неизвестен пчелар'
+    },
+    actions: {
+      unpublish: 'Скрий',
+      processing: 'Скриване...'
+    },
+    toasts: {
+      unpublishSuccess: 'Профилът е скрит от публичния списък.'
+    },
+    errors: {
+      generic: 'Възникна грешка при модериране на публичните профили.',
       notAuthenticated: 'Трябва да влезете в профила си.',
       missingConfig: 'Липсва конфигурация за Supabase. Провери .env настройките.'
     }

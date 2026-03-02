@@ -80,6 +80,20 @@ goldenbee-analytics/
 - `/admin`
 - unknown route -> Not Found screen
 
+### Home and Dashboard behavior
+
+- `/` is a public beekeepers directory (profiles with `is_public_profile=true`).
+- Guests can search the directory by beekeeper name and public location.
+- Authenticated users are redirected from `/` to `/dashboard`.
+- `/dashboard` contains the logged-in summary and recent activity view.
+- Guest navbar shows only Home + Login/Register.
+
+### Admin moderation
+
+- Admin page includes a public-profile moderation list with a `Hide` action (`is_public_profile=false`).
+- RLS policies for this are included in migration:
+	- `supabase/migrations/20260302000100_profiles_admin_moderation.sql`
+
 ## Commands
 
 ```bash

@@ -170,6 +170,12 @@ export function createRouter({ appSelector, onRouteResolved }) {
       isAdmin,
       userEmail: activeSession?.user?.email ?? ''
     };
+
+    if (pathname === '/' && session.isAuthed) {
+      navigate('/dashboard', { replace: true });
+      return;
+    }
+
     const redirectPath = guardRedirectPath(resolved.route.guard, session);
 
     if (redirectPath) {

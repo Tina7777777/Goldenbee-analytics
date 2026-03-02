@@ -52,7 +52,7 @@ export const en = {
   pages: {
     home: {
       title: 'Home',
-      description: 'Public home screen for GoldenBee Analytics.'
+      description: 'Public directory of beekeepers who chose to share data.'
     },
     login: {
       title: 'Login',
@@ -120,6 +120,16 @@ export const en = {
     }
   },
   home: {
+    directory: {
+      searchLabel: 'Search by name or location',
+      searchPlaceholder: 'Enter name or location...',
+      empty: 'No public profiles',
+      fields: {
+        location: 'Location',
+        contacts: 'Contacts',
+        hiveCount: 'Public hive count'
+      }
+    },
     summary: {
       apiaries: 'Apiaries',
       hives: 'Hives',
@@ -149,6 +159,25 @@ export const en = {
     },
     errors: {
       generic: 'An error occurred while loading the home dashboard.',
+      notAuthenticated: 'You must be signed in.',
+      missingConfig: 'Supabase configuration is missing. Check .env settings.'
+    }
+  },
+  admin: {
+    publicDirectory: {
+      title: 'Public profiles',
+      empty: 'No public profiles to review.',
+      unknownName: 'Unknown beekeeper'
+    },
+    actions: {
+      unpublish: 'Hide',
+      processing: 'Hiding...'
+    },
+    toasts: {
+      unpublishSuccess: 'Profile was removed from public directory.'
+    },
+    errors: {
+      generic: 'An error occurred while moderating public profiles.',
       notAuthenticated: 'You must be signed in.',
       missingConfig: 'Supabase configuration is missing. Check .env settings.'
     }

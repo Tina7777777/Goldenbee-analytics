@@ -2,6 +2,15 @@
   height: 100%;
 }
 
-.dashboard-page .badge {
-  width: fit-content;
+.dashboard-page .list-group-item {
+  border-left: 0;
+  border-right: 0;
+}
+
+.dashboard-page .list-group-item:first-child {
+  border-top: 0;
+}
+
+.dashboard-page .list-group-item:last-child {
+  border-bottom: 0;
 }
