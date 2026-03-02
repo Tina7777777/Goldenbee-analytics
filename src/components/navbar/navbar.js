@@ -44,7 +44,7 @@ export function renderNavbar({ active = 'home', isAdmin = false, isAuthed = fals
 
   const authControls = isAuthed
     ? `
-      <span class="badge text-bg-secondary">${t('common.user')}</span>
+      <span class="badge text-bg-secondary">${isAdmin ? t('common.admin') : t('common.user')}</span>
       ${userEmail ? `<span class="small text-secondary auth-email">${userEmail}</span>` : ''}
       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="logout">${t('nav.logout')}</button>
     `

@@ -148,17 +148,12 @@ export async function adminUnpublishProfile(profileId) {
   await getCurrentUserId();
   const normalizedProfileId = normalizeProfileId(profileId);
 
-  const { data, error } = await supabase
-    .from('profiles')
-    .update({ is_public_profile: false })
-    .eq('id', normalizedProfileId)
-    .eq('is_public_profile', true)
-    .select('id,is_public_profile')
-    .maybeSingle();
+  const { error } = await supabase
+    .rpc('admin_unpublish_profile', { target_profile_id: normalizedProfileId });
 
   if (error) {
     throw error;
   }
 
-  return data;
+  return { id: normalizedProfileId, is_public_profile: false };
 }
