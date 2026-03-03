@@ -84,10 +84,14 @@ function tableRowsMarkup() {
   }
 
   return hiveRows
-    .map(
-      (row) => `
+    .map((row) => {
+      const hiveCodeCell = row.hive_id && selectedApiaryId
+        ? `<a href="/apiary?id=${selectedApiaryId}&hive=${row.hive_id}" data-link="spa">${escapeHtml(row.hive_code || '-')}</a>`
+        : escapeHtml(row.hive_code || '-');
+
+      return `
       <tr>
-        <td class="fw-semibold">${escapeHtml(row.hive_code || '-')}</td>
+        <td class="fw-semibold">${hiveCodeCell}</td>
         <td>${formatNullable(row.brood_frames)}</td>
         <td>${formatNullable(row.honey_pollen_frames)}</td>
         <td>${formatNullable(row.total_frames)}</td>
@@ -100,8 +104,8 @@ function tableRowsMarkup() {
           <p class="small text-secondary mb-0">${formatDate(row.snapshots_last_at)}</p>
         </td>
       </tr>
-    `
-    )
+    `;
+    })
     .join('');
 }
 

@@ -102,8 +102,8 @@ function calibrationTableMarkup() {
                 ? `<a href="/apiary?id=${row.apiary_id}" data-link="spa">${escapeHtml(row.apiary_name || t('analyticsReports.noData'))}</a>`
                 : escapeHtml(row.apiary_name || t('analyticsReports.noData'));
 
-              const hiveCell = row.hive_id
-                ? `<a href="/hive?id=${row.hive_id}" data-link="spa">${escapeHtml(row.hive_code || t('analyticsReports.noData'))}</a>`
+              const hiveCell = row.hive_id && row.apiary_id
+                ? `<a href="/apiary?id=${row.apiary_id}&hive=${row.hive_id}" data-link="spa">${escapeHtml(row.hive_code || t('analyticsReports.noData'))}</a>`
                 : escapeHtml(row.hive_code || t('analyticsReports.noData'));
 
               return `
