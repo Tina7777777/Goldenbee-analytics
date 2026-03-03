@@ -164,3 +164,29 @@ a:hover,
   border-color: #8d652f;
   box-shadow: 0 0 0 0.2rem rgba(168, 120, 47, 0.3);
 }
+
+:is(.login-page, .register-page) .form-control {
+  background-color: #fffaf0;
+  border-color: #d6be93;
+  color: #2d2112;
+}
+
+:is(.login-page, .register-page) .form-control::placeholder {
+  color: #9f7a43;
+  opacity: 0.8;
+}
+
+:is(.login-page, .register-page) .form-control:focus,
+:is(.login-page, .register-page) .form-control:focus-visible {
+  background-color: #fffdf6;
+  border-color: #b98a4a;
+  box-shadow: 0 0 0 0.2rem rgba(185, 138, 74, 0.18);
+}
+
+:is(.login-page, .register-page) .form-control:-webkit-autofill,
+:is(.login-page, .register-page) .form-control:-webkit-autofill:hover,
+:is(.login-page, .register-page) .form-control:-webkit-autofill:focus {
+  -webkit-text-fill-color: #2d2112;
+  box-shadow: 0 0 0 1000px #fffaf0 inset;
+  transition: background-color 9999s ease-in-out 0s;
+}
