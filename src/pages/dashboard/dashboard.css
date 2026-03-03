@@ -1,16 +1,16 @@
-.dashboard-page .page-card {
-  height: 100%;
+.dashboard-page .dashboard-table-card {
+  overflow: hidden;
 }
 
-.dashboard-page .list-group-item {
-  border-left: 0;
-  border-right: 0;
+.dashboard-page .dashboard-state-table {
+  min-width: 980px;
 }
 
-.dashboard-page .list-group-item:first-child {
-  border-top: 0;
+.dashboard-page .dashboard-state-table thead th {
+  white-space: nowrap;
+  background-color: rgba(var(--bs-primary-rgb), 0.08);
 }
 
-.dashboard-page .list-group-item:last-child {
-  border-bottom: 0;
+.dashboard-page .dashboard-state-table tbody td {
+  vertical-align: top;
 }

@@ -1,23 +1,18 @@
 import './dashboard.css';
 import { t } from '../../i18n/i18n.js';
 import { showToast } from '../../components/toast/toast.js';
-import { getHomeDashboardData } from '../../services/dashboardService.js';
+import { getApiaryHivesLatestState, listOwnedApiariesForDashboard } from '../../services/dashboardService.js';
 import { formatDateTime } from '../../utils/dateTime.js';
 import { formatKg } from '../../utils/numberFormat.js';
 
-let dashboardData = null;
-let isLoading = false;
+let apiaries = [];
+let selectedApiaryId = '';
+let hiveRows = [];
+let isPageLoading = false;
+let isTableLoading = false;
 
-function createDefaultDashboardData() {
-  return {
-    apiariesCount: 0,
-    hivesCount: 0,
-    currentHoneyKgTotal: 0,
-    lastUpdatedAt: null,
-    recentSnapshots: [],
-    recentInspections: [],
-    recentHarvests: []
-  };
+function createDefaultState() {
+  return [];
 }
 
 function escapeHtml(value) {
@@ -37,173 +32,139 @@ function getFriendlyErrorMessage(error) {
   const message = String(error?.message || '').toLowerCase();
 
   if (message.includes('not authenticated')) {
-    return t('home.errors.notAuthenticated');
+    return t('board.errors.notAuthenticated');
   }
 
   if (message.includes('configured')) {
-    return t('home.errors.missingConfig');
+    return t('board.errors.missingConfig');
   }
 
-  return t('home.errors.generic');
+  return t('board.errors.generic');
 }
 
-function loadingMarkup() {
-  return `
-    <div class="page-card">
-      <p class="mb-0 text-secondary">${t('common.loading')}</p>
-    </div>
-  `;
+function formatNullable(value) {
+  return value === null || value === undefined ? '-' : escapeHtml(value);
 }
 
-function summaryCardsMarkup() {
-  const data = dashboardData || createDefaultDashboardData();
-
-  return `
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-3 mb-4">
-      <div class="col">
-        <article class="page-card h-100">
-          <p class="text-secondary small mb-1">${t('home.summary.apiaries')}</p>
-          <p class="h3 mb-0">${data.apiariesCount}</p>
-        </article>
-      </div>
-      <div class="col">
-        <article class="page-card h-100">
-          <p class="text-secondary small mb-1">${t('home.summary.hives')}</p>
-          <p class="h3 mb-0">${data.hivesCount}</p>
-        </article>
-      </div>
-      <div class="col">
-        <article class="page-card h-100">
-          <p class="text-secondary small mb-1">${t('home.summary.currentHoney')}</p>
-          <p class="h3 mb-0">${formatKg(data.currentHoneyKgTotal)} ${t('apiaries.hives.supers.kgUnit')}</p>
-        </article>
-      </div>
-      <div class="col">
-        <article class="page-card h-100">
-          <p class="text-secondary small mb-1">${t('home.summary.lastUpdated')}</p>
-          <p class="mb-0 fw-semibold">${formatDate(data.lastUpdatedAt)}</p>
-        </article>
-      </div>
-    </div>
-  `;
-}
-
-function locationText(item) {
-  const apiaryName = item.apiary_name ? escapeHtml(item.apiary_name) : t('home.activity.unknownApiary');
-  const hiveCode = item.hive_code ? ` • ${t('apiaries.hives.codeLabel')}: ${escapeHtml(item.hive_code)}` : '';
-  return `${apiaryName}${hiveCode}`;
-}
-
-function snapshotsListMarkup() {
-  const items = (dashboardData?.recentSnapshots || []).slice(0, 5);
-  if (!items.length) {
-    return `<p class="mb-0 text-secondary">${t('home.activity.empty')}</p>`;
+function formatBoolean(value) {
+  if (value === null || value === undefined) {
+    return '-';
   }
 
-  return `
-    <div class="list-group list-group-flush">
-      ${items
-        .map(
-          (item) => `
-        <article class="list-group-item px-0">
-          <p class="mb-1 fw-semibold">${formatDate(item.snapshot_at)}</p>
-          <p class="mb-1 small">${t('home.activity.snapshots.fullness')}: ${Number(item.honey_fullness ?? 0).toFixed(0)}%</p>
-          <p class="mb-0 small text-secondary">${locationText(item)}</p>
-        </article>
-      `
-        )
-        .join('')}
-    </div>
-  `;
+  return value ? t('apiaries.hives.inspections.summary.yes') : t('apiaries.hives.inspections.summary.no');
 }
 
-function inspectionsListMarkup() {
-  const items = (dashboardData?.recentInspections || []).slice(0, 5);
-  if (!items.length) {
-    return `<p class="mb-0 text-secondary">${t('home.activity.empty')}</p>`;
+function setApiaryQueryParam(apiaryId) {
+  const url = new URL(window.location.href);
+
+  if (apiaryId) {
+    url.searchParams.set('apiary', apiaryId);
+  } else {
+    url.searchParams.delete('apiary');
+  }
+
+  window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
+}
+
+function tableRowsMarkup() {
+  if (isTableLoading) {
+    return `
+      <tr>
+        <td colspan="9" class="text-secondary">${t('common.loading')}</td>
+      </tr>
+    `;
+  }
+
+  if (!hiveRows.length) {
+    return `
+      <tr>
+        <td colspan="9" class="text-secondary">${t('board.table.emptyRows')}</td>
+      </tr>
+    `;
+  }
+
+  return hiveRows
+    .map(
+      (row) => `
+      <tr>
+        <td class="fw-semibold">${escapeHtml(row.hive_code || '-')}</td>
+        <td>${formatNullable(row.brood_frames)}</td>
+        <td>${formatNullable(row.honey_pollen_frames)}</td>
+        <td>${formatNullable(row.total_frames)}</td>
+        <td>${formatBoolean(row.eggs_present)}</td>
+        <td>${formatBoolean(row.queen_seen)}</td>
+        <td>${formatNullable(row.supers_count)}</td>
+        <td>${formatKg(row.honey_kg_total || 0)} ${t('apiaries.hives.supers.kgUnit')}</td>
+        <td>
+          <p class="mb-0">${row.snapshots_count || 0}</p>
+          <p class="small text-secondary mb-0">${formatDate(row.snapshots_last_at)}</p>
+        </td>
+      </tr>
+    `
+    )
+    .join('');
+}
+
+function controlsMarkup() {
+  if (!apiaries.length) {
+    return `
+      <div class="page-card mb-3">
+        <p class="mb-0 text-secondary">${t('board.empty.message')}</p>
+      </div>
+    `;
   }
 
   return `
-    <div class="list-group list-group-flush">
-      ${items
-        .map(
-          (item) => `
-        <article class="list-group-item px-0">
-          <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
-            <p class="mb-0 fw-semibold">${formatDate(item.inspected_at)}</p>
-            ${item.important ? `<span class="badge text-bg-warning">${t('apiaries.hives.inspections.importantBadge')}</span>` : ''}
-          </div>
-          <p class="mb-0 small text-secondary">${locationText(item)}</p>
-        </article>
-      `
-        )
-        .join('')}
+    <div class="page-card mb-3">
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+        <label class="form-label mb-0" for="dashboard-apiary-select">${t('board.table.apiaryFilter')}</label>
+        <select id="dashboard-apiary-select" class="form-select w-100 w-md-auto">
+          ${apiaries
+            .map((apiary) => `<option value="${apiary.id}" ${selectedApiaryId === apiary.id ? 'selected' : ''}>${escapeHtml(apiary.name)}</option>`)
+            .join('')}
+        </select>
+      </div>
     </div>
   `;
 }
 
-function harvestsListMarkup() {
-  const items = (dashboardData?.recentHarvests || []).slice(0, 5);
-  if (!items.length) {
-    return `<p class="mb-0 text-secondary">${t('home.activity.empty')}</p>`;
+function tableMarkup() {
+  if (!apiaries.length) {
+    return '';
   }
 
   return `
-    <div class="list-group list-group-flush">
-      ${items
-        .map(
-          (item) => `
-        <article class="list-group-item px-0">
-          <p class="mb-1 fw-semibold">${formatDate(item.harvested_at)}</p>
-          <p class="mb-1 small">${t('home.activity.harvests.actualKg')}: ${item.actual_kg_total === null || item.actual_kg_total === undefined ? '-' : `${formatKg(item.actual_kg_total)} ${t('apiaries.hives.supers.kgUnit')}`}</p>
-          <p class="mb-0 small text-secondary">${locationText(item)}</p>
-        </article>
-      `
-        )
-        .join('')}
-    </div>
-  `;
-}
-
-function activitySectionsMarkup() {
-  return `
-    <div class="row row-cols-1 row-cols-lg-3 g-3 mb-4">
-      <div class="col">
-        <section class="page-card h-100">
-          <h2 class="h6 mb-3">${t('home.activity.snapshots.title')}</h2>
-          ${snapshotsListMarkup()}
-        </section>
-      </div>
-      <div class="col">
-        <section class="page-card h-100">
-          <h2 class="h6 mb-3">${t('home.activity.inspections.title')}</h2>
-          ${inspectionsListMarkup()}
-        </section>
-      </div>
-      <div class="col">
-        <section class="page-card h-100">
-          <h2 class="h6 mb-3">${t('home.activity.harvests.title')}</h2>
-          ${harvestsListMarkup()}
-        </section>
-      </div>
-    </div>
-  `;
-}
-
-function quickActionsMarkup() {
-  return `
-    <section class="page-card">
-      <h2 class="h6 mb-3">${t('home.quickActions.title')}</h2>
-      <div class="d-flex flex-column flex-sm-row gap-2">
-        <a class="btn btn-primary w-100 w-sm-auto" href="/apiaries" data-link="spa">${t('home.quickActions.openApiaries')}</a>
-        <a class="btn btn-outline-primary w-100 w-sm-auto" href="/apiaries" data-link="spa">${t('home.quickActions.newApiary')}</a>
+    <section class="page-card dashboard-table-card">
+      <h2 class="h5 mb-3">${t('board.table.title')}</h2>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0 dashboard-state-table">
+          <thead>
+            <tr>
+              <th>${t('board.table.columns.hiveCode')}</th>
+              <th>${t('board.table.columns.broodFrames')}</th>
+              <th>${t('board.table.columns.honeyPollenFrames')}</th>
+              <th>${t('board.table.columns.totalFrames')}</th>
+              <th>${t('board.table.columns.eggsPresent')}</th>
+              <th>${t('board.table.columns.queenSeen')}</th>
+              <th>${t('board.table.columns.supersCount')}</th>
+              <th>${t('board.table.columns.totalHoneyKg')}</th>
+              <th>${t('board.table.columns.superSnapshots')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tableRowsMarkup()}
+          </tbody>
+        </table>
       </div>
     </section>
   `;
 }
 
 function dashboardMarkup() {
-  return `${summaryCardsMarkup()}${activitySectionsMarkup()}${quickActionsMarkup()}`;
+  return `
+    ${controlsMarkup()}
+    ${tableMarkup()}
+  `;
 }
 
 function renderContent() {
@@ -212,20 +173,71 @@ function renderContent() {
     return;
   }
 
-  contentEl.innerHTML = isLoading ? loadingMarkup() : dashboardMarkup();
+  if (isPageLoading) {
+    contentEl.innerHTML = `<div class="page-card"><p class="mb-0 text-secondary">${t('common.loading')}</p></div>`;
+    return;
+  }
+
+  contentEl.innerHTML = dashboardMarkup();
+
+  const selectEl = document.getElementById('dashboard-apiary-select');
+  if (!selectEl || selectEl.dataset.bound === 'true') {
+    return;
+  }
+
+  selectEl.dataset.bound = 'true';
+  selectEl.addEventListener('change', (event) => {
+    const nextApiaryId = String(event.target.value || '');
+    if (!nextApiaryId || nextApiaryId === selectedApiaryId) {
+      return;
+    }
+
+    selectedApiaryId = nextApiaryId;
+    setApiaryQueryParam(selectedApiaryId);
+    void loadApiaryTable();
+  });
 }
 
-async function loadDashboard() {
-  isLoading = true;
+async function loadApiaryTable() {
+  isTableLoading = true;
   renderContent();
 
   try {
-    dashboardData = await getHomeDashboardData();
+    hiveRows = await getApiaryHivesLatestState(selectedApiaryId);
   } catch (error) {
-    dashboardData = createDefaultDashboardData();
+    hiveRows = createDefaultState();
     showToast(getFriendlyErrorMessage(error), t('common.error'));
   } finally {
-    isLoading = false;
+    isTableLoading = false;
+    renderContent();
+  }
+}
+
+async function loadDashboard() {
+  isPageLoading = true;
+  renderContent();
+
+  try {
+    apiaries = await listOwnedApiariesForDashboard();
+
+    const requestedApiaryId = new URLSearchParams(window.location.search).get('apiary') || '';
+    const hasRequestedApiary = apiaries.some((apiary) => apiary.id === requestedApiaryId);
+
+    selectedApiaryId = hasRequestedApiary ? requestedApiaryId : apiaries[0]?.id || '';
+    setApiaryQueryParam(selectedApiaryId);
+
+    if (selectedApiaryId) {
+      hiveRows = await getApiaryHivesLatestState(selectedApiaryId);
+    } else {
+      hiveRows = createDefaultState();
+    }
+  } catch (error) {
+    apiaries = [];
+    hiveRows = createDefaultState();
+    showToast(getFriendlyErrorMessage(error), t('common.error'));
+  } finally {
+    isPageLoading = false;
+    isTableLoading = false;
     renderContent();
   }
 }
@@ -240,8 +252,11 @@ export function render() {
 }
 
 export function init() {
-  dashboardData = createDefaultDashboardData();
-  isLoading = true;
+  apiaries = [];
+  selectedApiaryId = '';
+  hiveRows = createDefaultState();
+  isPageLoading = true;
+  isTableLoading = false;
   renderContent();
   void loadDashboard();
 }

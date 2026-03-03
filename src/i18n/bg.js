@@ -203,6 +203,22 @@ export const bg = {
   },
   board: {
     noData: 'Няма данни',
+    table: {
+      title: 'Последно състояние на пчелина',
+      apiaryFilter: 'Избран пчелин',
+      emptyRows: 'Няма кошери в избрания пчелин.',
+      columns: {
+        hiveCode: 'Код на кошера',
+        broodFrames: 'Рамки с пило',
+        honeyPollenFrames: 'Рамки с мед/прашец',
+        totalFrames: 'Общ брой рамки',
+        eggsPresent: 'Има яйца',
+        queenSeen: 'Видяна майка',
+        supersCount: 'Брой магазини',
+        totalHoneyKg: 'Общо мед (кг)',
+        superSnapshots: 'Снимки на магазини'
+      }
+    },
     summary: {
       apiaries: 'Пчелини',
       hives: 'Кошери',

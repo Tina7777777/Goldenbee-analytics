@@ -203,6 +203,22 @@ export const en = {
   },
   board: {
     noData: 'No data',
+    table: {
+      title: 'Latest apiary state',
+      apiaryFilter: 'Selected apiary',
+      emptyRows: 'No hives in the selected apiary.',
+      columns: {
+        hiveCode: 'Hive code',
+        broodFrames: 'Brood frames',
+        honeyPollenFrames: 'Honey/pollen frames',
+        totalFrames: 'Total frames',
+        eggsPresent: 'Eggs present',
+        queenSeen: 'Queen seen',
+        supersCount: 'Supers count',
+        totalHoneyKg: 'Total honey (kg)',
+        superSnapshots: 'Super snapshots'
+      }
+    },
     summary: {
       apiaries: 'Apiaries',
       hives: 'Hives',
