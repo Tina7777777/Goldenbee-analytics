@@ -26,8 +26,6 @@ let harvestFormState = createDefaultFormState();
 
 function createDefaultFormState() {
   return {
-    notes: '',
-    actualKgTotal: '',
     items: [createDefaultFormItem()]
   };
 }
@@ -289,18 +287,21 @@ function renderModalBody() {
       <div class="border rounded p-2 bg-light-subtle">
         <p class="mb-0 fw-semibold">${t('apiaries.hives.harvests.computedTotal')}: ${formatKg(totalEstimatedKg)} ${t('apiaries.hives.supers.kgUnit')}</p>
       </div>
-
-      <div>
-        <label class="form-label" for="harvest-actual-total">${t('apiaries.hives.harvests.actualTotalOptional')}</label>
-        <input id="harvest-actual-total" class="form-control" type="number" min="0" step="0.01" data-role="harvest-actual-total" value="${escapeHtml(harvestFormState.actualKgTotal)}" />
-      </div>
-
-      <div>
-        <label class="form-label" for="harvest-notes">${t('apiaries.hives.harvests.notes')}</label>
-        <textarea id="harvest-notes" class="form-control" rows="3" data-role="harvest-notes">${escapeHtml(harvestFormState.notes)}</textarea>
-      </div>
     </div>
   `;
+}
+
+async function notifyHarvestsChanged(hiveId) {
+  const onChanged = callbacksByHive.get(hiveId);
+  if (typeof onChanged !== 'function') {
+    return;
+  }
+
+  try {
+    await onChanged();
+  } catch (error) {
+    console.error('[harvestsSection] Failed to notify harvests change.', error);
+  }
 }
 
 function setHarvestSubmitState(saving) {
@@ -391,17 +392,6 @@ function ensureHarvestModal() {
       }
       return;
     }
-
-    const actualTotalEl = event.target.closest('[data-role="harvest-actual-total"]');
-    if (actualTotalEl && modalElement.contains(actualTotalEl)) {
-      harvestFormState.actualKgTotal = actualTotalEl.value;
-      return;
-    }
-
-    const notesEl = event.target.closest('[data-role="harvest-notes"]');
-    if (notesEl && modalElement.contains(notesEl)) {
-      harvestFormState.notes = notesEl.value;
-    }
   });
 
   modalElement.addEventListener('submit', (event) => {
@@ -451,8 +441,6 @@ async function handleHarvestSubmit() {
 
     await createHarvestWithItems({
       hive_id: currentHarvestHiveId,
-      notes: harvestFormState.notes,
-      actual_kg_total: harvestFormState.actualKgTotal,
       items: validItems.map((item) => ({
         frames_count: item.frames_count,
         fill_level: item.fill_level,
@@ -463,7 +451,7 @@ async function handleHarvestSubmit() {
     harvestModalInstance?.hide();
     showToast(t('apiaries.hives.harvests.toasts.createSuccess'), t('common.success'));
     await loadHarvests(currentHarvestHiveId);
-    await callbacksByHive.get(currentHarvestHiveId)?.();
+    await notifyHarvestsChanged(currentHarvestHiveId);
   } catch (error) {
     showToast(getHarvestsFriendlyErrorMessage(error), t('common.error'));
   } finally {
@@ -489,7 +477,7 @@ async function handleHarvestDelete(hiveId, harvestId) {
     await deleteHarvest(harvestId);
     showToast(t('apiaries.hives.harvests.toasts.deleteSuccess'), t('common.success'));
     await loadHarvests(hiveId);
-    await callbacksByHive.get(hiveId)?.();
+    await notifyHarvestsChanged(hiveId);
   } catch (error) {
     showToast(getHarvestsFriendlyErrorMessage(error), t('common.error'));
   } finally {
