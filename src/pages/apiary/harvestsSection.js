@@ -117,6 +117,20 @@ function getNotesPreview(notes) {
   return `${text.slice(0, 80)}...`;
 }
 
+function getHarvestNotesPreview(harvest) {
+  const directNotes = String(harvest?.notes || '').trim();
+  if (directNotes) {
+    return getNotesPreview(directNotes);
+  }
+
+  const groupedNotes = (harvest?.harvest_items || [])
+    .map((item) => String(item?.notes || '').trim())
+    .filter(Boolean)
+    .join(' | ');
+
+  return getNotesPreview(groupedNotes);
+}
+
 function harvestsListMarkup(hiveId, hiveState) {
   if (hiveState.loading) {
     return `<p class="mb-0 text-secondary">${t('common.loading')}</p>`;
@@ -131,7 +145,6 @@ function harvestsListMarkup(hiveId, hiveState) {
       ${hiveState.harvests.slice(0, HARVESTS_LIMIT).map((harvest) => {
         const deleting = Boolean(hiveState.deletingById[harvest.id]);
         const estimatedTotal = getHarvestEstimatedTotal(harvest);
-        const hasActual = harvest.actual_kg_total !== null && harvest.actual_kg_total !== undefined;
 
         return `
           <article class="border rounded p-3">
@@ -146,8 +159,7 @@ function harvestsListMarkup(hiveId, hiveState) {
               </button>
             </div>
             <p class="mb-1 small">${t('apiaries.hives.harvests.estimatedTotal')}: <strong>${formatKg(estimatedTotal)} ${t('apiaries.hives.supers.kgUnit')}</strong></p>
-            <p class="mb-1 small">${t('apiaries.hives.harvests.actualTotal')}: <strong>${hasActual ? `${formatKg(harvest.actual_kg_total)} ${t('apiaries.hives.supers.kgUnit')}` : '-'}</strong></p>
-            <p class="mb-0 small text-secondary">${t('apiaries.hives.harvests.notes')}: ${escapeHtml(getNotesPreview(harvest.notes))}</p>
+            <p class="mb-0 small text-secondary">${t('apiaries.hives.harvests.notes')}: ${escapeHtml(getHarvestNotesPreview(harvest))}</p>
           </article>
         `;
       }).join('')}
@@ -252,7 +264,7 @@ function modalItemsMarkup() {
             </div>
             <div class="col-12 col-md-4">
               <label class="form-label">${t('apiaries.hives.harvests.rowEstimated')}</label>
-              <p class="form-control-plaintext fw-semibold mb-0">${formatKg(estimatedKg)} ${t('apiaries.hives.supers.kgUnit')}</p>
+              <p class="form-control-plaintext fw-semibold mb-0" data-role="harvest-row-estimated" data-item-id="${item.id}">${formatKg(estimatedKg)} ${t('apiaries.hives.supers.kgUnit')}</p>
             </div>
           </div>
 
@@ -285,10 +297,27 @@ function renderModalBody() {
       </div>
 
       <div class="border rounded p-2 bg-light-subtle">
-        <p class="mb-0 fw-semibold">${t('apiaries.hives.harvests.computedTotal')}: ${formatKg(totalEstimatedKg)} ${t('apiaries.hives.supers.kgUnit')}</p>
+        <p class="mb-0 fw-semibold" data-role="harvest-total-estimated">${t('apiaries.hives.harvests.computedTotal')}: ${formatKg(totalEstimatedKg)} ${t('apiaries.hives.supers.kgUnit')}</p>
       </div>
     </div>
   `;
+}
+
+function refreshHarvestEstimatesInModal() {
+  const totalEstimatedKg = harvestFormState.items.reduce((sum, item) => sum + estimateForItem(item), 0);
+  const totalEl = document.querySelector('[data-role="harvest-total-estimated"]');
+  if (totalEl) {
+    totalEl.textContent = `${t('apiaries.hives.harvests.computedTotal')}: ${formatKg(totalEstimatedKg)} ${t('apiaries.hives.supers.kgUnit')}`;
+  }
+
+  harvestFormState.items.forEach((item) => {
+    const rowEl = document.querySelector(`[data-role="harvest-row-estimated"][data-item-id="${item.id}"]`);
+    if (!rowEl) {
+      return;
+    }
+
+    rowEl.textContent = `${formatKg(estimateForItem(item))} ${t('apiaries.hives.supers.kgUnit')}`;
+  });
 }
 
 async function notifyHarvestsChanged(hiveId) {
@@ -388,7 +417,7 @@ function ensureHarvestModal() {
       const field = itemFieldEl.getAttribute('data-field');
       if (itemId && field) {
         updateFormItem(itemId, field, itemFieldEl.value);
-        renderModalBody();
+        refreshHarvestEstimatesInModal();
       }
       return;
     }
