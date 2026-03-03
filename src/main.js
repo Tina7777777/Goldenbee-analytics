@@ -1,4 +1,5 @@
 import './utils/appSetup.js';
+import './styles/app.css';
 import { renderFooter } from './components/footer/footer.js';
 import { renderNavbar, wireNavbarInteractions } from './components/navbar/navbar.js';
 import { initI18n, t } from './i18n/i18n.js';
