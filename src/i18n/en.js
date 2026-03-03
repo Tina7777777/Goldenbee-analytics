@@ -269,7 +269,7 @@ export const en = {
       date: 'Date',
       apiary: 'Apiary',
       hive: 'Hive',
-      estimatedKg: 'Estimated (kg)',
+      estimatedKg: 'Yield (kg)',
       actualKg: 'Actual (kg)',
       deltaKg: 'Delta',
       avgFullness: 'Avg kg',
