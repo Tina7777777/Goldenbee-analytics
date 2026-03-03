@@ -270,7 +270,7 @@ export const bg = {
       apiary: 'Пчелин',
       hive: 'Кошер',
       estimatedKg: 'Добив (кг)',
-      actualKg: 'Реално (кг)',
+      actualKg: 'Хипотетично (кг)',
       deltaKg: 'Разлика',
       avgFullness: 'Средно кг',
       avgKgEstimate: 'Средна оценка (кг)',
