@@ -1,15 +1,15 @@
 :root {
-  --honey-50: #fff7e6;
-  --honey-100: #f4deb2;
-  --honey-300: #e8bf66;
-  --honey-500: #d89b00;
-  --honey-700: #a97600;
-  --honey-900: #5f430a;
-  --bee-dark: #2f2412;
-  --bee-soft: #6b4a17;
-  --danger-soft: #8f4a45;
+  --honey-50: #fffdf4;
+  --honey-100: #f8e8b5;
+  --honey-300: #efc66b;
+  --honey-500: #d7a24a;
+  --honey-700: #a8782f;
+  --honey-900: #5c3f14;
+  --bee-dark: #121212;
+  --bee-soft: #1e1e1e;
+  --danger-soft: #9a7258;
 
-  --gba-bg-color: #f1cf84;
+  --gba-bg-color: #fff3cf;
   --gba-surface-color: var(--honey-50);
   --gba-border-color: var(--honey-100);
   --gba-text-color: var(--bee-dark);
@@ -30,8 +30,8 @@
   --bs-secondary-color: var(--gba-text-muted);
   --bs-tertiary-color: var(--bee-soft);
   --bs-emphasis-color: var(--gba-text-color);
-  --bs-link-color: var(--honey-700);
-  --bs-link-hover-color: var(--honey-900);
+  --bs-link-color: #1a1a1a;
+  --bs-link-hover-color: #000000;
   --bs-danger: var(--danger-soft);
-  --bs-danger-rgb: 143, 74, 69;
+  --bs-danger-rgb: 154, 114, 88;
 }

@@ -1,21 +1,21 @@
 .app-navbar {
   border-bottom: 1px solid var(--gba-border-color);
-  background: linear-gradient(180deg, #f8dd9f 0%, #f2c971 100%);
-  box-shadow: 0 8px 20px -16px var(--gba-shadow-color);
+  background: linear-gradient(180deg, #ffe7a6 0%, #ffd98a 100%);
+  box-shadow: 0 8px 20px -16px rgba(60, 43, 26, 0.2);
 }
 
 .app-navbar .navbar-brand {
-  color: #5d3e0f;
+  color: #111111;
 }
 
 .app-navbar .nav-link {
-  color: #6f4b14;
+  color: #161616;
 }
 
 .app-navbar .nav-link.active,
 .app-navbar .nav-link:focus,
 .app-navbar .nav-link:hover {
-  color: #4b3008;
+  color: #000000;
 }
 
 .auth-email {
