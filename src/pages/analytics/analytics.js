@@ -1,7 +1,8 @@
 import './analytics.css';
-import { getLanguage, t } from '../../i18n/i18n.js';
+import { t } from '../../i18n/i18n.js';
 import { showToast } from '../../components/toast/toast.js';
 import { listRecentFullnessTrend, listRecentHarvestCalibration } from '../../services/analyticsService.js';
+import { formatDateTime } from '../../utils/dateTime.js';
 
 const HARVEST_CALIBRATION_LIMIT = 20;
 const FULLNESS_TREND_DAYS = 14;
@@ -28,16 +29,7 @@ function escapeHtml(value) {
 }
 
 function formatDate(value) {
-  if (!value) {
-    return t('analyticsReports.noData');
-  }
-
-  const locale = getLanguage() === 'en' ? 'en-US' : 'bg-BG';
-
-  return new Intl.DateTimeFormat(locale, {
-    dateStyle: 'medium',
-    timeStyle: 'short'
-  }).format(new Date(value));
+  return formatDateTime(value, { empty: t('analyticsReports.noData') });
 }
 
 function formatKg(value) {

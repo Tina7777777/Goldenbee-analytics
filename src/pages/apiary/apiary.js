@@ -1,8 +1,9 @@
 import './apiary.css';
-import { getLanguage, t } from '../../i18n/i18n.js';
+import { t } from '../../i18n/i18n.js';
 import { showToast } from '../../components/toast/toast.js';
 import { deleteApiary, getApiaryById, updateApiary } from '../../services/apiaryService.js';
 import { navigate } from '../../utils/navigation.js';
+import { formatDateTime } from '../../utils/dateTime.js';
 import { initApiarySummary, renderApiarySummary } from './apiarySummary.js';
 import { initHivesSection, renderHivesSection } from './hivesSection.js';
 
@@ -12,16 +13,7 @@ let isEditMode = false;
 let isLoading = false;
 
 function formatDate(value) {
-  if (!value) {
-    return '-';
-  }
-
-  const locale = getLanguage() === 'en' ? 'en-US' : 'bg-BG';
-
-  return new Intl.DateTimeFormat(locale, {
-    dateStyle: 'medium',
-    timeStyle: 'short'
-  }).format(new Date(value));
+  return formatDateTime(value, { empty: '-' });
 }
 
 function getFriendlyErrorMessage(error) {

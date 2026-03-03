@@ -1,7 +1,8 @@
 import './dashboard.css';
-import { getLanguage, t } from '../../i18n/i18n.js';
+import { t } from '../../i18n/i18n.js';
 import { showToast } from '../../components/toast/toast.js';
 import { getHomeDashboardData } from '../../services/dashboardService.js';
+import { formatDateTime } from '../../utils/dateTime.js';
 
 let dashboardData = null;
 let isLoading = false;
@@ -28,16 +29,7 @@ function escapeHtml(value) {
 }
 
 function formatDate(value) {
-  if (!value) {
-    return t('home.summary.noData');
-  }
-
-  const locale = getLanguage() === 'en' ? 'en-US' : 'bg-BG';
-
-  return new Intl.DateTimeFormat(locale, {
-    dateStyle: 'medium',
-    timeStyle: 'short'
-  }).format(new Date(value));
+  return formatDateTime(value, { empty: t('home.summary.noData') });
 }
 
 function formatKg(value) {

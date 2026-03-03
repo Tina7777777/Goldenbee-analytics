@@ -1,7 +1,8 @@
-import { getLanguage, t } from '../../i18n/i18n.js';
+import { t } from '../../i18n/i18n.js';
 import { showToast } from '../../components/toast/toast.js';
 import { createSnapshot, listSnapshotsBySuper } from '../../services/superSnapshotsService.js';
 import { installSuper, listSupersByHive, removeSuper } from '../../services/supersService.js';
+import { formatDateTime } from '../../utils/dateTime.js';
 
 const SNAPSHOT_LIMIT = 1;
 
@@ -42,16 +43,7 @@ function escapeHtml(value) {
 }
 
 function formatDate(value) {
-  if (!value) {
-    return '-';
-  }
-
-  const locale = getLanguage() === 'en' ? 'en-US' : 'bg-BG';
-
-  return new Intl.DateTimeFormat(locale, {
-    dateStyle: 'medium',
-    timeStyle: 'short'
-  }).format(new Date(value));
+  return formatDateTime(value, { empty: '-' });
 }
 
 function formatKgFromFullness(fullness) {

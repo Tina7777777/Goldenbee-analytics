@@ -1,7 +1,8 @@
 import { Modal } from 'bootstrap';
-import { getLanguage, t } from '../../i18n/i18n.js';
+import { t } from '../../i18n/i18n.js';
 import { showToast } from '../../components/toast/toast.js';
 import { createHarvestWithItems, deleteHarvest, listHarvestsByHive } from '../../services/harvestsService.js';
+import { formatDateTime } from '../../utils/dateTime.js';
 
 const HARVESTS_LIMIT = 3;
 const FILL_LEVEL_COEFFICIENTS = {
@@ -70,16 +71,7 @@ function formatKg(value) {
 }
 
 function formatDate(value) {
-  if (!value) {
-    return '-';
-  }
-
-  const locale = getLanguage() === 'en' ? 'en-US' : 'bg-BG';
-
-  return new Intl.DateTimeFormat(locale, {
-    dateStyle: 'medium',
-    timeStyle: 'short'
-  }).format(new Date(value));
+  return formatDateTime(value, { empty: '-' });
 }
 
 function escapeHtml(value) {

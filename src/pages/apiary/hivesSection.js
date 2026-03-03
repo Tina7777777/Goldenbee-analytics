@@ -1,7 +1,8 @@
 import { Modal } from 'bootstrap';
-import { getLanguage, t } from '../../i18n/i18n.js';
+import { t } from '../../i18n/i18n.js';
 import { showToast } from '../../components/toast/toast.js';
 import { createHive, deleteHive, listHivesByApiary, updateHive } from '../../services/hivesService.js';
+import { formatDateTime } from '../../utils/dateTime.js';
 import { initHarvestsSection, renderHarvestsSection } from './harvestsSection.js';
 import { initInspectionsSection, renderInspectionsSection } from './inspectionsSection.js';
 import { initSupersSection, renderSupersSection } from './supersSection.js';
@@ -71,16 +72,7 @@ function scrollHiveIntoView(hiveId) {
 }
 
 function formatDate(value) {
-  if (!value) {
-    return '-';
-  }
-
-  const locale = getLanguage() === 'en' ? 'en-US' : 'bg-BG';
-
-  return new Intl.DateTimeFormat(locale, {
-    dateStyle: 'medium',
-    timeStyle: 'short'
-  }).format(new Date(value));
+  return formatDateTime(value, { empty: '-' });
 }
 
 function escapeHtml(value) {

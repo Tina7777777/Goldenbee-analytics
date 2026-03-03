@@ -1,8 +1,9 @@
 import './apiaries.css';
-import { getLanguage, t } from '../../i18n/i18n.js';
+import { t } from '../../i18n/i18n.js';
 import { showToast } from '../../components/toast/toast.js';
 import { createApiary, deleteApiary, listMyApiaries, updateApiary } from '../../services/apiaryService.js';
 import { getMyApiariesCardStats } from '../../services/apiaryAnalyticsService.js';
+import { formatDateTime } from '../../utils/dateTime.js';
 
 let apiaries = [];
 let apiaryStatsById = new Map();
@@ -11,16 +12,7 @@ let editingApiaryId = null;
 let isLoading = false;
 
 function formatDate(value) {
-  if (!value) {
-    return '-';
-  }
-
-  const locale = getLanguage() === 'en' ? 'en-US' : 'bg-BG';
-
-  return new Intl.DateTimeFormat(locale, {
-    dateStyle: 'medium',
-    timeStyle: 'short'
-  }).format(new Date(value));
+  return formatDateTime(value, { empty: '-' });
 }
 
 function formatLastUpdated(value) {
