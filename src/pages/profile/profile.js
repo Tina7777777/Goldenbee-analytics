@@ -2,10 +2,13 @@ import './profile.css';
 import { t } from '../../i18n/i18n.js';
 import { showToast } from '../../components/toast/toast.js';
 import { getMyProfile, upsertMyProfile } from '../../services/profileService.js';
+import { getMyLatestProfilePhotoUrl, uploadMyProfilePhoto } from '../../services/photoService.js';
 
 let profile = null;
 let isLoading = false;
 let isSaving = false;
+let isPhotoUploading = false;
+let profilePhoto = null;
 
 function createDefaultProfileState() {
   return {
@@ -57,9 +60,33 @@ function loadingMarkup() {
 
 function formMarkup() {
   const state = profile || createDefaultProfileState();
+  const photoUrl = profilePhoto?.url || '';
 
   return `
     <div class="page-card">
+      <div class="profile-photo-block mb-4">
+        <h2 class="h6 mb-3">${t('profile.photo.title')}</h2>
+        ${
+          photoUrl
+            ? `
+              <div class="profile-photo-preview-wrap mb-3">
+                <img src="${toInputValue(photoUrl)}" alt="${t('profile.photo.alt')}" class="profile-photo-preview" />
+              </div>
+              <a href="${toInputValue(photoUrl)}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-secondary mb-3">${t('profile.photo.download')}</a>
+            `
+            : `<p class="text-secondary small mb-3">${t('profile.photo.noPhoto')}</p>`
+        }
+
+        <form id="profile-photo-form" class="vstack gap-2" novalidate>
+          <input class="form-control" type="file" id="profile-photo-file" name="photo" accept="image/*" />
+          <div>
+            <button type="submit" class="btn btn-outline-primary" ${isPhotoUploading ? 'disabled' : ''}>
+              ${isPhotoUploading ? t('profile.photo.uploading') : t('profile.photo.upload')}
+            </button>
+          </div>
+        </form>
+      </div>
+
       <form id="profile-form" class="vstack gap-3" novalidate>
         <div>
           <label class="form-label" for="profile-display-name">${t('profile.form.displayName')}</label>
@@ -131,16 +158,63 @@ async function loadProfile() {
   renderContent();
 
   try {
-    const result = await getMyProfile();
+    const [result, latestPhoto] = await Promise.all([getMyProfile(), getMyLatestProfilePhotoUrl()]);
     profile = {
       ...createDefaultProfileState(),
       ...(result || {})
     };
+    profilePhoto = latestPhoto;
   } catch (error) {
     profile = createDefaultProfileState();
+    profilePhoto = null;
     showToast(getFriendlyErrorMessage(error), t('common.error'));
   } finally {
     isLoading = false;
+    renderContent();
+  }
+}
+
+function getFriendlyPhotoErrorMessage(error) {
+  const message = String(error?.message || '').toLowerCase();
+
+  if (message.includes('exceeds max size')) {
+    return t('profile.photo.errors.fileTooLarge');
+  }
+
+  if (message.includes('invalid image file type')) {
+    return t('profile.photo.errors.invalidType');
+  }
+
+  if (message.includes('not authenticated')) {
+    return t('profile.errors.notAuthenticated');
+  }
+
+  if (message.includes('configured')) {
+    return t('profile.errors.missingConfig');
+  }
+
+  return t('profile.photo.errors.generic');
+}
+
+async function handlePhotoUpload(formElement) {
+  const fileInput = formElement.querySelector('input[name="photo"]');
+  const photoFile = fileInput?.files?.[0] || null;
+
+  if (!photoFile) {
+    showToast(t('profile.photo.errors.required'), t('common.error'));
+    return;
+  }
+
+  try {
+    isPhotoUploading = true;
+    renderContent();
+    await uploadMyProfilePhoto(photoFile);
+    profilePhoto = await getMyLatestProfilePhotoUrl();
+    showToast(t('profile.photo.toasts.uploadSuccess'), t('common.success'));
+  } catch (error) {
+    showToast(getFriendlyPhotoErrorMessage(error), t('common.error'));
+  } finally {
+    isPhotoUploading = false;
     renderContent();
   }
 }
@@ -195,10 +269,22 @@ export function init() {
   profile = createDefaultProfileState();
   isLoading = true;
   isSaving = false;
+  isPhotoUploading = false;
+  profilePhoto = null;
   renderContent();
   void loadProfile();
 
   pageElement.addEventListener('submit', (event) => {
+    const photoFormElement = event.target.closest('#profile-photo-form');
+    if (photoFormElement && pageElement.contains(photoFormElement)) {
+      event.preventDefault();
+      if (!isPhotoUploading) {
+        void handlePhotoUpload(photoFormElement);
+      }
+
+      return;
+    }
+
     const formElement = event.target.closest('#profile-form');
     if (!formElement || !pageElement.contains(formElement)) {
       return;

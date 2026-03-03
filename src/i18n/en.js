@@ -97,6 +97,23 @@ export const en = {
     }
   },
   profile: {
+    photo: {
+      title: 'Profile photo',
+      alt: 'Profile photo',
+      noPhoto: 'No photo uploaded yet.',
+      upload: 'Upload photo',
+      uploading: 'Uploading...',
+      download: 'Open photo',
+      toasts: {
+        uploadSuccess: 'Photo uploaded successfully.'
+      },
+      errors: {
+        required: 'Please choose a photo to upload.',
+        invalidType: 'Only image files are allowed.',
+        fileTooLarge: 'File is too large (max 5MB).',
+        generic: 'An error occurred while uploading photo.'
+      }
+    },
     form: {
       displayName: 'Display name',
       about: 'About',
