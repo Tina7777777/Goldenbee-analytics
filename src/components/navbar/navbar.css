@@ -1,6 +1,7 @@
 .app-navbar {
   border-bottom: 1px solid var(--gba-border-color);
-  background: var(--gba-surface-color);
+  background: linear-gradient(180deg, #fff9ea 0%, #fff4d9 100%);
+  box-shadow: 0 8px 20px -16px var(--gba-shadow-color);
 }
 
 .auth-email {

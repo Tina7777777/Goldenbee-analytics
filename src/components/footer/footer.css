@@ -1,3 +1,4 @@
 .app-footer {
   border-top: 1px solid var(--gba-border-color);
+  background: linear-gradient(180deg, #fff9ea 0%, #fff3d1 100%);
 }
