@@ -6,7 +6,7 @@ import { setHtml } from '../../utils/dom.js';
 
 export function renderNavbar({ active = 'home', isAdmin = false, isAuthed = false, userEmail = '' } = {}) {
   const links = [
-    { key: 'home', href: '/', label: t('nav.home'), guestOnly: true },
+    { key: 'home', href: '/', label: t('nav.home') },
     { key: 'apiaries', href: '/apiaries', label: t('nav.apiaries'), authOnly: true },
     { key: 'dashboard', href: '/dashboard', label: t('nav.dashboard'), authOnly: true },
     { key: 'analytics', href: '/analytics', label: t('nav.analytics'), authOnly: true },
