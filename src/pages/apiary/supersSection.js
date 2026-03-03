@@ -184,7 +184,7 @@ function renderSection(hiveId) {
 
   if (hiveState.supersLoading) {
     return `
-      <div class="pt-3">
+      <div class="pt-3 hive-section hive-section--supers">
         <div class="border rounded p-3">
           <p class="mb-0 text-secondary">${t('common.loading')}</p>
         </div>
@@ -196,7 +196,7 @@ function renderSection(hiveId) {
   const freePositions = getFreeSuperPositions(activeSupers);
 
   return `
-    <div class="pt-3">
+    <div class="pt-3 hive-section hive-section--supers">
       <div class="border rounded p-3">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
           <h3 class="h6 mb-0">${t('apiaries.hives.supers.title')}</h3>

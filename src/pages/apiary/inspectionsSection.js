@@ -202,7 +202,7 @@ function setInspectionSubmitState(saving) {
 function renderSection(hiveId) {
   const hiveState = getHiveState(hiveId);
   return `
-    <div class="pt-3" data-inspections-container="${hiveId}">
+    <div class="pt-3 hive-section hive-section--inspections" data-inspections-container="${hiveId}">
       <div class="border rounded p-3">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
           <h3 class="h6 mb-0">${t('apiaries.hives.inspections.title')}</h3>

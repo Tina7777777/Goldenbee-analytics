@@ -1,3 +1,67 @@
 .apiary-page .page-card {
   max-width: 920px;
 }
+
+.apiary-page #apiary-hives-list .list-group {
+  padding: 0.625rem;
+  border: 1px solid var(--honey-300);
+  border-radius: 0.875rem;
+  background-color: var(--honey-100);
+  gap: 0.75rem;
+}
+
+.apiary-page #apiary-hives-list .list-group-item {
+  border: 1px solid var(--honey-300);
+  border-radius: 0.75rem;
+  background-color: var(--gba-surface-color);
+  box-shadow: 0 8px 18px -14px var(--gba-shadow-color);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.apiary-page #apiary-hives-list .list-group-item + .list-group-item {
+  margin-top: 0;
+  border-top-width: 1px;
+}
+
+.apiary-page #apiary-hives-list .list-group-item:is(:hover, :focus-within) {
+  border-color: var(--honey-500);
+  box-shadow: 0 12px 24px -16px var(--gba-shadow-color);
+}
+
+.apiary-page #apiary-hives-list .hive-section > .border {
+  border-width: 1px;
+  border-radius: 0.65rem;
+}
+
+.apiary-page #apiary-hives-list .hive-section > .border > .d-flex > .h6 {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+}
+
+.apiary-page #apiary-hives-list .hive-section--supers > .border {
+  border-color: rgba(var(--bs-primary-rgb), 0.38) !important;
+  background-color: rgba(var(--bs-primary-rgb), 0.08);
+}
+
+.apiary-page #apiary-hives-list .hive-section--supers > .border > .d-flex > .h6 {
+  background-color: rgba(var(--bs-primary-rgb), 0.16);
+}
+
+.apiary-page #apiary-hives-list .hive-section--inspections > .border {
+  border-color: rgba(var(--bs-secondary-rgb), 0.32) !important;
+  background-color: rgba(var(--bs-secondary-rgb), 0.08);
+}
+
+.apiary-page #apiary-hives-list .hive-section--inspections > .border > .d-flex > .h6 {
+  background-color: rgba(var(--bs-secondary-rgb), 0.16);
+}
+
+.apiary-page #apiary-hives-list .hive-section--harvests > .border {
+  border-color: rgba(var(--bs-danger-rgb), 0.32) !important;
+  background-color: rgba(var(--bs-danger-rgb), 0.08);
+}
+
+.apiary-page #apiary-hives-list .hive-section--harvests > .border > .d-flex > .h6 {
+  background-color: rgba(var(--bs-danger-rgb), 0.16);
+}
