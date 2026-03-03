@@ -142,6 +142,7 @@ export const bg = {
       searchPlaceholder: 'Въведете име или локация...',
       empty: 'Няма публични профили',
       fields: {
+        photoAlt: 'Профилна снимка',
         location: 'Локация',
         contacts: 'Контакти',
         hiveCount: 'Публичен брой кошери'
@@ -184,7 +185,8 @@ export const bg = {
     publicDirectory: {
       title: 'Публични профили',
       empty: 'Няма публични профили за преглед.',
-      unknownName: 'Неизвестен пчелар'
+      unknownName: 'Неизвестен пчелар',
+      photoAlt: 'Профилна снимка'
     },
     actions: {
       unpublish: 'Скрий',

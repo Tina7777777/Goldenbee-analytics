@@ -140,7 +140,45 @@ export async function getPublicProfiles() {
     throw error;
   }
 
-  return data || [];
+  const publicProfiles = data || [];
+  if (!publicProfiles.length) {
+    return [];
+  }
+
+  const profileIds = publicProfiles.map((profile) => profile.id).filter(Boolean);
+
+  const { data: photoRows, error: photoError } = await supabase
+    .from('photos')
+    .select('profile_id,bucket_id,object_path,created_at')
+    .in('profile_id', profileIds)
+    .order('created_at', { ascending: false });
+
+  if (photoError) {
+    throw photoError;
+  }
+
+  const latestPhotoByProfileId = new Map();
+  for (const row of photoRows || []) {
+    if (!row?.profile_id || latestPhotoByProfileId.has(row.profile_id)) {
+      continue;
+    }
+
+    const { data: signedData, error: signedError } = await supabase.storage
+      .from(row.bucket_id || 'profile-photos')
+      .createSignedUrl(row.object_path || '', 3600);
+
+    if (signedError) {
+      latestPhotoByProfileId.set(row.profile_id, '');
+      continue;
+    }
+
+    latestPhotoByProfileId.set(row.profile_id, signedData?.signedUrl || '');
+  }
+
+  return publicProfiles.map((profile) => ({
+    ...profile,
+    photo_url: latestPhotoByProfileId.get(profile.id) || ''
+  }));
 }
 
 export async function adminUnpublishProfile(profileId) {

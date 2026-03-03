@@ -39,16 +39,26 @@ function loadingMarkup() {
 }
 
 function publicProfileCardMarkup(profile) {
+  const hasHiveCount = profile.public_hive_count !== null && profile.public_hive_count !== undefined;
+  const photoMarkup = profile.photo_url
+    ? `
+      <div class="admin-profile-photo-wrap mb-2">
+        <img src="${escapeHtml(profile.photo_url)}" alt="${t('admin.publicDirectory.photoAlt')}" class="admin-profile-photo" />
+      </div>
+    `
+    : '';
+
   return `
     <article class="page-card">
       <div class="d-flex justify-content-between align-items-start gap-3">
         <div>
+          ${photoMarkup}
           <h2 class="h5 mb-2">${escapeHtml(profile.display_name || t('admin.publicDirectory.unknownName'))}</h2>
           ${profile.about ? `<p class="mb-2">${escapeHtml(profile.about)}</p>` : ''}
           <div class="small">
             ${profile.show_location && profile.location_text ? `<p class="mb-1"><span class="text-secondary">${t('home.directory.fields.location')}:</span> ${escapeHtml(profile.location_text)}</p>` : ''}
             ${profile.show_contacts && profile.contacts ? `<p class="mb-1"><span class="text-secondary">${t('home.directory.fields.contacts')}:</span> ${escapeHtml(profile.contacts)}</p>` : ''}
-            ${profile.show_hive_count && Number.isFinite(Number(profile.public_hive_count)) ? `<p class="mb-0"><span class="text-secondary">${t('home.directory.fields.hiveCount')}:</span> ${Number(profile.public_hive_count)}</p>` : ''}
+            ${profile.show_hive_count && hasHiveCount && Number.isFinite(Number(profile.public_hive_count)) ? `<p class="mb-0"><span class="text-secondary">${t('home.directory.fields.hiveCount')}:</span> ${Number(profile.public_hive_count)}</p>` : ''}
           </div>
         </div>
         <button

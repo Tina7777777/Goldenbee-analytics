@@ -142,6 +142,7 @@ export const en = {
       searchPlaceholder: 'Enter name or location...',
       empty: 'No public profiles',
       fields: {
+        photoAlt: 'Profile photo',
         location: 'Location',
         contacts: 'Contacts',
         hiveCount: 'Public hive count'
@@ -184,7 +185,8 @@ export const en = {
     publicDirectory: {
       title: 'Public profiles',
       empty: 'No public profiles to review.',
-      unknownName: 'Unknown beekeeper'
+      unknownName: 'Unknown beekeeper',
+      photoAlt: 'Profile photo'
     },
     actions: {
       unpublish: 'Hide',
