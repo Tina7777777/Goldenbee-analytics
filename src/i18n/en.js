@@ -273,6 +273,13 @@ export const en = {
   },
   apiaries: {
     addButton: 'Add apiary',
+    cardStats: {
+      hives: 'Hives',
+      hivesWithSupers: 'Hives with supers',
+      activeSupers: 'Active supers',
+      latestHoneyKg: 'Latest total honey',
+      lastUpdated: 'Last updated'
+    },
     honeySummary: {
       title: 'Current honey estimate',
       activeSupers: 'Active supers',

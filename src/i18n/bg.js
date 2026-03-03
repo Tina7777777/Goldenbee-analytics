@@ -273,6 +273,13 @@ export const bg = {
   },
   apiaries: {
     addButton: 'Добави пчелин',
+    cardStats: {
+      hives: 'Кошери',
+      hivesWithSupers: 'Кошери с магазини',
+      activeSupers: 'Активни магазини',
+      latestHoneyKg: 'Последен общ мед',
+      lastUpdated: 'Последно обновяване'
+    },
     honeySummary: {
       title: 'Текуща оценка мед',
       activeSupers: 'Активни магазини',

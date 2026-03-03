@@ -2,8 +2,10 @@ import './apiaries.css';
 import { t } from '../../i18n/i18n.js';
 import { showToast } from '../../components/toast/toast.js';
 import { createApiary, deleteApiary, listMyApiaries, updateApiary } from '../../services/apiaryService.js';
+import { getMyApiariesCardStats } from '../../services/apiaryAnalyticsService.js';
 
 let apiaries = [];
+let apiaryStatsById = new Map();
 let isCreateVisible = false;
 let editingApiaryId = null;
 let isLoading = false;
@@ -17,6 +19,14 @@ function formatDate(value) {
     dateStyle: 'medium',
     timeStyle: 'short'
   }).format(new Date(value));
+}
+
+function formatLastUpdated(value) {
+  if (!value) {
+    return t('apiaries.honeySummary.noData');
+  }
+
+  return formatDate(value);
 }
 
 function getFriendlyErrorMessage(error) {
@@ -96,6 +106,13 @@ function getEditFormMarkup(apiary) {
 
 function getApiaryCardMarkup(apiary) {
   const isEditing = editingApiaryId === apiary.id;
+  const stats = apiaryStatsById.get(apiary.id) || {
+    hivesCount: 0,
+    hivesWithActiveSupersCount: 0,
+    activeSupersCount: 0,
+    latestTotalHoneyKg: 0,
+    lastSnapshotAt: null
+  };
 
   return `
     <div class="col">
@@ -107,6 +124,28 @@ function getApiaryCardMarkup(apiary) {
           <h2 class="h5 mb-2">${escapeHtml(apiary.name)}</h2>
           ${apiary.location_text ? `<p class="mb-2 text-secondary">${escapeHtml(apiary.location_text)}</p>` : ''}
           <p class="small text-secondary mb-3">${t('apiaries.createdAt')}: ${formatDate(apiary.created_at)}</p>
+          <dl class="apiary-card-stats small mb-3">
+            <div>
+              <dt>${t('apiaries.cardStats.hives')}</dt>
+              <dd>${stats.hivesCount}</dd>
+            </div>
+            <div>
+              <dt>${t('apiaries.cardStats.hivesWithSupers')}</dt>
+              <dd>${stats.hivesWithActiveSupersCount}</dd>
+            </div>
+            <div>
+              <dt>${t('apiaries.cardStats.activeSupers')}</dt>
+              <dd>${stats.activeSupersCount}</dd>
+            </div>
+            <div>
+              <dt>${t('apiaries.cardStats.latestHoneyKg')}</dt>
+              <dd>${Number(stats.latestTotalHoneyKg || 0).toFixed(1)} ${t('apiaries.hives.supers.kgUnit')}</dd>
+            </div>
+            <div>
+              <dt>${t('apiaries.cardStats.lastUpdated')}</dt>
+              <dd>${formatLastUpdated(stats.lastSnapshotAt)}</dd>
+            </div>
+          </dl>
           <div class="mt-auto d-flex flex-column flex-md-row gap-2">
             <a class="btn btn-outline-primary w-100 w-md-auto" href="/apiary?id=${apiary.id}" data-link="spa">${t('apiaries.actions.open')}</a>
             <button type="button" class="btn btn-outline-secondary w-100 w-md-auto" data-action="edit" data-id="${apiary.id}">${t('apiaries.actions.edit')}</button>
@@ -161,7 +200,9 @@ async function loadApiaries() {
   renderList();
 
   try {
-    apiaries = await listMyApiaries();
+    const [loadedApiaries, loadedStats] = await Promise.all([listMyApiaries(), getMyApiariesCardStats()]);
+    apiaries = loadedApiaries;
+    apiaryStatsById = loadedStats;
   } catch (error) {
     showToast(getFriendlyErrorMessage(error), t('common.error'));
   } finally {
@@ -280,6 +321,7 @@ export function init() {
   }
 
   apiaries = [];
+  apiaryStatsById = new Map();
   isCreateVisible = false;
   editingApiaryId = null;
   isLoading = true;

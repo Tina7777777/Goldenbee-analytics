@@ -5,3 +5,24 @@
 .apiaries-page .btn {
   white-space: nowrap;
 }
+
+.apiary-card-stats {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.375rem;
+}
+
+.apiary-card-stats div {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.apiary-card-stats dt,
+.apiary-card-stats dd {
+  margin: 0;
+}
+
+.apiary-card-stats dd {
+  font-weight: 600;
+}
