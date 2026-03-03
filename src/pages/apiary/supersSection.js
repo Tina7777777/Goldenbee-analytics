@@ -1,4 +1,4 @@
-import { t } from '../../i18n/i18n.js';
+import { getLanguage, t } from '../../i18n/i18n.js';
 import { showToast } from '../../components/toast/toast.js';
 import { createSnapshot, listSnapshotsBySuper } from '../../services/superSnapshotsService.js';
 import { installSuper, listSupersByHive, removeSuper } from '../../services/supersService.js';
@@ -46,7 +46,9 @@ function formatDate(value) {
     return '-';
   }
 
-  return new Intl.DateTimeFormat('bg-BG', {
+  const locale = getLanguage() === 'en' ? 'en-US' : 'bg-BG';
+
+  return new Intl.DateTimeFormat(locale, {
     dateStyle: 'medium',
     timeStyle: 'short'
   }).format(new Date(value));

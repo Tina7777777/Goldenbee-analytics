@@ -1,5 +1,5 @@
 import { Modal } from 'bootstrap';
-import { t } from '../../i18n/i18n.js';
+import { getLanguage, t } from '../../i18n/i18n.js';
 import { showToast } from '../../components/toast/toast.js';
 import { createHive, deleteHive, listHivesByApiary, updateHive } from '../../services/hivesService.js';
 import { initHarvestsSection, renderHarvestsSection } from './harvestsSection.js';
@@ -75,7 +75,9 @@ function formatDate(value) {
     return '-';
   }
 
-  return new Intl.DateTimeFormat('bg-BG', {
+  const locale = getLanguage() === 'en' ? 'en-US' : 'bg-BG';
+
+  return new Intl.DateTimeFormat(locale, {
     dateStyle: 'medium',
     timeStyle: 'short'
   }).format(new Date(value));

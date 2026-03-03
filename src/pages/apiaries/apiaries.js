@@ -1,5 +1,5 @@
 import './apiaries.css';
-import { t } from '../../i18n/i18n.js';
+import { getLanguage, t } from '../../i18n/i18n.js';
 import { showToast } from '../../components/toast/toast.js';
 import { createApiary, deleteApiary, listMyApiaries, updateApiary } from '../../services/apiaryService.js';
 import { getMyApiariesCardStats } from '../../services/apiaryAnalyticsService.js';
@@ -15,7 +15,9 @@ function formatDate(value) {
     return '-';
   }
 
-  return new Intl.DateTimeFormat('bg-BG', {
+  const locale = getLanguage() === 'en' ? 'en-US' : 'bg-BG';
+
+  return new Intl.DateTimeFormat(locale, {
     dateStyle: 'medium',
     timeStyle: 'short'
   }).format(new Date(value));
