@@ -160,7 +160,7 @@ export const en = {
       unknownApiary: 'Unknown apiary',
       snapshots: {
         title: 'Recent super snapshots',
-        fullness: 'Fullness'
+        fullness: 'Honey (kg)'
       },
       inspections: {
         title: 'Recent inspections'
@@ -233,7 +233,7 @@ export const en = {
     actions: {
       open: 'Open',
       addInspection: 'Add inspection',
-      addSnapshot: 'Add fullness',
+      addSnapshot: 'Add honey kg',
       addHarvest: 'Add harvest'
     },
     empty: {
@@ -253,7 +253,7 @@ export const en = {
       caption: 'Last up to 20 harvests'
     },
     trend: {
-      title: 'Fullness trend',
+      title: 'Super honey trend',
       caption: 'Average values per apiary'
     },
     filters: {
@@ -272,14 +272,14 @@ export const en = {
       estimatedKg: 'Estimated (kg)',
       actualKg: 'Actual (kg)',
       deltaKg: 'Delta',
-      avgFullness: 'Avg fullness',
+      avgFullness: 'Avg kg',
       avgKgEstimate: 'Avg estimate (kg)',
       snapshotsCount: 'Snapshots',
       lastUpdated: 'Last updated'
     },
     empty: {
       calibration: 'No harvest calibration data for this period.',
-      trend: 'No fullness data for this period.'
+      trend: 'No super honey data for this period.'
     },
     errors: {
       generic: 'An error occurred while loading analytics.',
@@ -347,7 +347,7 @@ export const en = {
       quickStats: {
         activeSupers: 'Active supers',
         fullSupers: 'Full supers',
-        averageFullness: 'Average fullness',
+        averageFullness: 'Average kg per super',
         noData: 'No data'
       },
       confirmDelete: 'Are you sure you want to delete this hive?',
@@ -377,10 +377,10 @@ export const en = {
         saveSnapshot: 'Save',
         positionLabel: 'Position',
         installedAt: 'Installed at',
-        lastFullness: 'Last fullness',
-        estimatedKg: 'Estimated kg',
+        lastFullness: 'Last entered kg',
+        estimatedKg: 'Last honey amount',
         kgUnit: 'kg',
-        fullnessInput: 'Fullness (%)',
+        fullnessInput: 'Honey amount (kg)',
         snapshotNotes: 'Notes',
         emptyActive: 'No active supers.',
         noFreePositions: 'No free positions (1-5).',
@@ -398,14 +398,14 @@ export const en = {
         toasts: {
           installSuccess: 'Super installed successfully.',
           removeSuccess: 'Super removed successfully.',
-          snapshotSuccess: 'Fullness snapshot saved successfully.'
+          snapshotSuccess: 'Honey amount saved successfully.'
         },
         errors: {
           generic: 'An error occurred while working with supers.',
           positionRequired: 'Position is required.',
           positionTaken: 'Selected position is already taken.',
-          fullnessRequired: 'Fullness is required.',
-          fullnessRange: 'Fullness must be between 0 and 130.',
+          fullnessRequired: 'Honey amount is required.',
+          fullnessRange: 'Honey amount must be 0 or greater.',
           notAuthenticated: 'You must be signed in.',
           missingConfig: 'Supabase configuration is missing. Check .env settings.'
         }

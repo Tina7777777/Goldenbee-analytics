@@ -211,7 +211,7 @@ export async function listRecentFullnessTrend(days = 14) {
         apiary_name: group.apiary_name,
         snapshots_count: group.snapshots_count,
         average_honey_fullness: Number(averageFullness.toFixed(1)),
-        average_kg_estimate: Number((averageFullness / 10).toFixed(1)),
+        average_kg_estimate: Number(averageFullness.toFixed(1)),
         last_updated_at: group.last_updated_at
       };
     })

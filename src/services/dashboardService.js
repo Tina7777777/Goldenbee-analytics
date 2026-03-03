@@ -140,7 +140,7 @@ export async function getHoneySummary() {
   });
 
   return {
-    currentHoneyKgTotal: Number((fullnessTotal / 10).toFixed(1)),
+    currentHoneyKgTotal: Number(fullnessTotal.toFixed(1)),
     lastUpdatedAt
   };
 }
@@ -378,7 +378,7 @@ export async function getApiaryHivesLatestState(apiaryId) {
         return sum;
       }
 
-      return sum + toNumber(latestSnapshot.honey_fullness, 0) / 10;
+      return sum + toNumber(latestSnapshot.honey_fullness, 0);
     }, 0);
 
     return {

@@ -61,7 +61,7 @@ export async function getApiaryCurrentHoneyKg(apiaryId) {
   const totalKg = superIds.reduce((sum, superId) => {
     const latestSnapshot = latestSnapshotBySuperId.get(superId);
     const fullness = Number(latestSnapshot?.honey_fullness || 0);
-    return sum + fullness / 10;
+    return sum + fullness;
   }, 0);
 
   let lastSnapshotAt = null;
@@ -217,7 +217,7 @@ export async function getMyApiariesCardStats() {
 
     const fullness = Number(snapshot?.honey_fullness || 0);
     const currentStats = statsByApiaryId.get(apiaryId);
-    currentStats.latestTotalHoneyKg += fullness / 10;
+    currentStats.latestTotalHoneyKg += fullness;
 
     if (snapshot?.snapshot_at) {
       if (!currentStats.lastSnapshotAt || new Date(snapshot.snapshot_at) > new Date(currentStats.lastSnapshotAt)) {
@@ -238,7 +238,7 @@ function createDefaultHiveSupersQuickStats() {
   };
 }
 
-const FULL_SUPER_THRESHOLD_PERCENT = 90;
+const FULL_SUPER_THRESHOLD_KG = 9;
 
 export async function getHiveSupersQuickStats(hiveIds = []) {
   ensureSupabaseClient();
@@ -312,7 +312,7 @@ export async function getHiveSupersQuickStats(hiveIds = []) {
     const currentStats = statsByHiveId.get(hiveId);
 
     currentStats.supersWithSnapshotsCount += 1;
-    if (fullness > FULL_SUPER_THRESHOLD_PERCENT) {
+    if (fullness > FULL_SUPER_THRESHOLD_KG) {
       currentStats.fullSupersCount += 1;
     }
 

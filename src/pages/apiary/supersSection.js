@@ -6,7 +6,6 @@ import { formatDateTime } from '../../utils/dateTime.js';
 import { formatKg } from '../../utils/numberFormat.js';
 
 const SNAPSHOT_LIMIT = 1;
-const MAX_SNAPSHOT_FULLNESS_PERCENT = 130;
 
 const stateByHive = {};
 const containersByHive = new Map();
@@ -48,12 +47,12 @@ function formatDate(value) {
   return formatDateTime(value, { empty: '-' });
 }
 
-function formatKgFromFullness(fullness) {
-  if (fullness === null || fullness === undefined) {
+function formatSnapshotKg(honeyFullness) {
+  if (honeyFullness === null || honeyFullness === undefined) {
     return '-';
   }
 
-  return `${formatKg(Number(fullness) / 10)} ${t('apiaries.hives.supers.kgUnit')}`;
+  return `${formatKg(Number(honeyFullness))} ${t('apiaries.hives.supers.kgUnit')}`;
 }
 
 function getSupersFriendlyErrorMessage(error) {
@@ -127,8 +126,7 @@ function activeSupersMarkup(hiveId, hiveState, activeSupers) {
       ${activeSupers
         .map((superItem) => {
           const latestSnapshot = hiveState.snapshotsBySuper[superItem.id]?.[0] || null;
-          const fullnessText = latestSnapshot ? `${Number(latestSnapshot.honey_fullness).toFixed(1)}%` : '-';
-          const kgText = latestSnapshot ? formatKgFromFullness(latestSnapshot.honey_fullness) : '-';
+          const kgText = latestSnapshot ? formatSnapshotKg(latestSnapshot.honey_fullness) : '-';
           const savingSnapshot = Boolean(hiveState.savingSnapshotBySuper[superItem.id]);
           const savingRemove = Boolean(hiveState.savingRemoveBySuper[superItem.id]);
 
@@ -140,7 +138,6 @@ function activeSupersMarkup(hiveId, hiveState, activeSupers) {
                   <p class="mb-0 small text-secondary">${t('apiaries.hives.supers.installedAt')}: ${formatDate(superItem.installed_at)}</p>
                 </div>
                 <div class="text-md-end">
-                  <p class="mb-1 small">${t('apiaries.hives.supers.lastFullness')}: <strong>${fullnessText}</strong></p>
                   <p class="mb-0 small">${t('apiaries.hives.supers.estimatedKg')}: <strong>${kgText}</strong></p>
                 </div>
               </div>
@@ -148,7 +145,7 @@ function activeSupersMarkup(hiveId, hiveState, activeSupers) {
               <form class="vstack gap-2" data-role="super-snapshot-form" data-hive-id="${hiveId}" data-super-id="${superItem.id}" novalidate>
                 <div>
                   <label class="form-label" for="snapshot-fullness-${superItem.id}">${t('apiaries.hives.supers.fullnessInput')}</label>
-                  <input id="snapshot-fullness-${superItem.id}" name="honey_fullness" type="number" min="0" max="${MAX_SNAPSHOT_FULLNESS_PERCENT}" step="0.01" class="form-control" required />
+                  <input id="snapshot-fullness-${superItem.id}" name="honey_fullness" type="number" min="0" step="0.01" class="form-control" required />
                 </div>
                 <div>
                   <label class="form-label" for="snapshot-notes-${superItem.id}">${t('apiaries.hives.supers.snapshotNotes')}</label>
@@ -332,15 +329,15 @@ async function handleSuperSnapshotSubmit(formElement) {
   }
 
   const formData = new FormData(formElement);
-  const fullnessRaw = String(formData.get('honey_fullness') || '').trim();
-  const honeyFullness = Number(fullnessRaw.replaceAll(',', '.'));
+  const honeyKgRaw = String(formData.get('honey_fullness') || '').trim();
+  const honeyKg = Number(honeyKgRaw.replaceAll(',', '.'));
 
-  if (!fullnessRaw || Number.isNaN(honeyFullness)) {
+  if (!honeyKgRaw || Number.isNaN(honeyKg)) {
     showToast(t('apiaries.hives.supers.errors.fullnessRequired'), t('common.error'));
     return;
   }
 
-  if (honeyFullness < 0 || honeyFullness > MAX_SNAPSHOT_FULLNESS_PERCENT) {
+  if (honeyKg < 0) {
     showToast(t('apiaries.hives.supers.errors.fullnessRange'), t('common.error'));
     return;
   }
@@ -351,7 +348,7 @@ async function handleSuperSnapshotSubmit(formElement) {
 
     await createSnapshot({
       super_id: superId,
-      honey_fullness: honeyFullness,
+      honey_fullness: honeyKg,
       notes: formData.get('notes')
     });
 

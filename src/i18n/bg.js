@@ -160,7 +160,7 @@ export const bg = {
       unknownApiary: 'Неизвестен пчелин',
       snapshots: {
         title: 'Последни снимки на магазини',
-        fullness: 'Пълнота'
+        fullness: 'Мед (кг)'
       },
       inspections: {
         title: 'Последни прегледи'
@@ -233,7 +233,7 @@ export const bg = {
     actions: {
       open: 'Отвори',
       addInspection: 'Добави преглед',
-      addSnapshot: 'Добави пълнота',
+      addSnapshot: 'Добави кг мед',
       addHarvest: 'Добави добив'
     },
     empty: {
@@ -253,7 +253,7 @@ export const bg = {
       caption: 'Последни до 20 добива'
     },
     trend: {
-      title: 'Тренд на пълнотата',
+      title: 'Тренд на меда в магазините',
       caption: 'Средни стойности по пчелин'
     },
     filters: {
@@ -272,14 +272,14 @@ export const bg = {
       estimatedKg: 'Оценка (кг)',
       actualKg: 'Реално (кг)',
       deltaKg: 'Разлика',
-      avgFullness: 'Средна пълнота',
+      avgFullness: 'Средно кг',
       avgKgEstimate: 'Средна оценка (кг)',
       snapshotsCount: 'Снимки',
       lastUpdated: 'Последно обновяване'
     },
     empty: {
       calibration: 'Няма данни за добиви за избрания период.',
-      trend: 'Няма данни за пълнота за избрания период.'
+      trend: 'Няма данни за мед в магазините за избрания период.'
     },
     errors: {
       generic: 'Възникна грешка при зареждане на анализите.',
@@ -347,7 +347,7 @@ export const bg = {
       quickStats: {
         activeSupers: 'Активни магазини',
         fullSupers: 'Пълни магазини',
-        averageFullness: 'Средна пълнота',
+        averageFullness: 'Средно кг в магазин',
         noData: 'Няма данни'
       },
       confirmDelete: 'Сигурни ли сте, че искате да изтриете този кошер?',
@@ -377,10 +377,10 @@ export const bg = {
         saveSnapshot: 'Запиши',
         positionLabel: 'Позиция',
         installedAt: 'Поставен на',
-        lastFullness: 'Последна пълнота',
-        estimatedKg: 'Оценка кг',
+        lastFullness: 'Последно въведено кг',
+        estimatedKg: 'Последно количество мед',
         kgUnit: 'кг',
-        fullnessInput: 'Пълнота (%)',
+        fullnessInput: 'Количество мед (кг)',
         snapshotNotes: 'Бележки',
         emptyActive: 'Няма активни магазини.',
         noFreePositions: 'Няма свободни позиции (1-5).',
@@ -398,14 +398,14 @@ export const bg = {
         toasts: {
           installSuccess: 'Магазинът е добавен успешно.',
           removeSuccess: 'Магазинът е махнат успешно.',
-          snapshotSuccess: 'Пълнотата е записана успешно.'
+          snapshotSuccess: 'Количеството мед е записано успешно.'
         },
         errors: {
           generic: 'Възникна грешка при работа с магазините.',
           positionRequired: 'Позицията е задължителна.',
           positionTaken: 'Избраната позиция е заета.',
-          fullnessRequired: 'Пълнотата е задължителна.',
-          fullnessRange: 'Пълнотата трябва да е между 0 и 130.',
+          fullnessRequired: 'Количеството мед е задължително.',
+          fullnessRange: 'Количеството мед трябва да е 0 или повече.',
           notAuthenticated: 'Трябва да влезете в профила си.',
           missingConfig: 'Липсва конфигурация за Supabase. Провери .env настройките.'
         }

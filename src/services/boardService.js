@@ -144,7 +144,7 @@ export async function getBoardData() {
         return;
       }
 
-      summary.current_honey_kg += toNumber(snapshot.honey_fullness, 0) / 10;
+      summary.current_honey_kg += toNumber(snapshot.honey_fullness, 0);
 
       if (!summary.last_updated_at || new Date(snapshot.snapshot_at) > new Date(summary.last_updated_at)) {
         summary.last_updated_at = snapshot.snapshot_at;

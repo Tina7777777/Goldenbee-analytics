@@ -131,7 +131,7 @@ function formatAverageFullness(value) {
     return t('apiaries.hives.quickStats.noData');
   }
 
-  return `${formatKg(value)}%`;
+  return `${formatKg(value)} ${t('apiaries.hives.supers.kgUnit')}`;
 }
 
 function getFilteredHives() {

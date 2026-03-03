@@ -136,7 +136,6 @@ function trendTableMarkup() {
         <thead>
           <tr>
             <th>${t('analyticsReports.columns.apiary')}</th>
-            <th class="text-nowrap">${t('analyticsReports.columns.avgFullness')}</th>
             <th class="text-nowrap">${t('analyticsReports.columns.avgKgEstimate')}</th>
             <th class="text-nowrap">${t('analyticsReports.columns.snapshotsCount')}</th>
             <th class="text-nowrap">${t('analyticsReports.columns.lastUpdated')}</th>
@@ -152,7 +151,6 @@ function trendTableMarkup() {
               return `
                 <tr>
                   <td>${apiaryCell}</td>
-                  <td class="text-nowrap">${Number(row.average_honey_fullness || 0).toFixed(1)}%</td>
                   <td class="text-nowrap">${formatKg(row.average_kg_estimate)} ${t('apiaries.hives.supers.kgUnit')}</td>
                   <td class="text-nowrap">${row.snapshots_count || 0}</td>
                   <td class="text-nowrap">${formatDate(row.last_updated_at)}</td>
