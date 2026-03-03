@@ -9,6 +9,10 @@ body {
   color: var(--gba-text-color);
 }
 
+#footer-slot {
+  margin-top: auto;
+}
+
 .page-card {
   background: #fffef9;
   border: 1px solid var(--honey-100);
