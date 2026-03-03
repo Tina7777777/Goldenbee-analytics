@@ -1,7 +1,9 @@
 import { Modal } from 'bootstrap';
 import { t } from '../../i18n/i18n.js';
 import { showToast } from '../../components/toast/toast.js';
+import { getHiveSupersQuickStats } from '../../services/apiaryAnalyticsService.js';
 import { createHive, deleteHive, listHivesByApiary, updateHive } from '../../services/hivesService.js';
+import { formatKg } from '../../utils/numberFormat.js';
 import { formatDateTime } from '../../utils/dateTime.js';
 import { initHarvestsSection, renderHarvestsSection } from './harvestsSection.js';
 import { initInspectionsSection, renderInspectionsSection } from './inspectionsSection.js';
@@ -15,6 +17,7 @@ let hiveModalInstance = null;
 let isHiveSaving = false;
 
 let hivePanelsState = {};
+let hiveSupersQuickStatsById = new Map();
 let requestedHiveId = '';
 let initializedApiaryId = '';
 
@@ -108,6 +111,32 @@ function normalizeHiveCode(value) {
     .trim();
 }
 
+function getDefaultHiveSupersQuickStats() {
+  return {
+    activeSupersCount: 0,
+    fullSupersCount: 0,
+    averageFullness: null,
+    supersWithSnapshotsCount: 0
+  };
+}
+
+function getHiveSupersQuickStatsForHive(hiveId) {
+  return hiveSupersQuickStatsById.get(hiveId) || getDefaultHiveSupersQuickStats();
+}
+
+function formatAverageFullness(value) {
+  if (value === null || value === undefined) {
+    return t('apiaries.hives.quickStats.noData');
+  }
+
+  return `${formatKg(value)}%`;
+}
+
+async function loadHiveSupersQuickStats() {
+  const hiveIds = hives.map((hive) => hive.id);
+  hiveSupersQuickStatsById = await getHiveSupersQuickStats(hiveIds);
+}
+
 function hiveModalMarkup() {
   return `
     <div class="modal fade" id="hive-modal" tabindex="-1" aria-hidden="true">
@@ -168,6 +197,7 @@ function hivesListMarkup() {
         ${hives
           .map((hive) => {
             const panelState = getHivePanelState(hive.id);
+            const quickStats = getHiveSupersQuickStatsForHive(hive.id);
 
             return `
               <div class="list-group-item" id="hive-item-${hive.id}">
@@ -176,7 +206,10 @@ function hivesListMarkup() {
                     <div>
                       <p class="mb-1 fw-semibold">${t('apiaries.hives.codeLabel')}: ${escapeHtml(hive.code)}</p>
                       <p class="mb-1 text-secondary">${escapeHtml(hive.notes || '-')}</p>
-                      <p class="mb-0 small text-secondary">${t('apiaries.createdAt')}: ${formatDate(hive.created_at)}</p>
+                      <p class="mb-1 small text-secondary">${t('apiaries.createdAt')}: ${formatDate(hive.created_at)}</p>
+                      <p class="mb-1 small text-secondary">${t('apiaries.hives.quickStats.activeSupers')}: <strong>${quickStats.activeSupersCount}</strong></p>
+                      <p class="mb-1 small text-secondary">${t('apiaries.hives.quickStats.fullSupers')}: <strong>${quickStats.fullSupersCount}</strong></p>
+                      <p class="mb-0 small text-secondary">${t('apiaries.hives.quickStats.averageFullness')}: <strong>${formatAverageFullness(quickStats.averageFullness)}</strong></p>
                     </div>
                     <div class="d-flex flex-column flex-md-row gap-2 w-100 w-md-auto">
                       <button type="button" class="btn btn-outline-primary w-100 w-md-auto" data-action="toggle-hive-panel" data-hive-id="${hive.id}">
@@ -222,6 +255,9 @@ function renderHivesListOnly() {
         hiveId: hive.id,
         containerEl: supersContainerEl,
         onChanged: async () => {
+          await loadHiveSupersQuickStats();
+          renderHivesListOnly();
+
           if (typeof onDataChangedCallback === 'function') {
             await onDataChangedCallback();
           }
@@ -295,8 +331,17 @@ async function loadHives() {
   try {
     hives = await listHivesByApiary(currentApiaryId);
     reconcileHivePanels();
+
+    try {
+      await loadHiveSupersQuickStats();
+    } catch (error) {
+      hiveSupersQuickStatsById = new Map();
+      showToast(getHivesFriendlyErrorMessage(error), t('common.error'));
+    }
+
     await expandHiveFromRequested(true);
   } catch (error) {
+    hiveSupersQuickStatsById = new Map();
     showToast(getHivesFriendlyErrorMessage(error), t('common.error'));
   } finally {
     isHivesLoading = false;
@@ -328,6 +373,9 @@ async function expandHiveFromRequested(scroll = false) {
       hiveId: requestedHiveId,
       containerEl: supersContainerEl,
       onChanged: async () => {
+        await loadHiveSupersQuickStats();
+        renderHivesListOnly();
+
         if (typeof onDataChangedCallback === 'function') {
           await onDataChangedCallback();
         }
@@ -538,6 +586,7 @@ export function initHivesSection({
     editingHiveId = null;
     isHiveSaving = false;
     hivePanelsState = {};
+    hiveSupersQuickStatsById = new Map();
     requestedHiveId = new URLSearchParams(window.location.search).get('hive') || '';
   }
 

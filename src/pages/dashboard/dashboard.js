@@ -3,6 +3,7 @@ import { t } from '../../i18n/i18n.js';
 import { showToast } from '../../components/toast/toast.js';
 import { getHomeDashboardData } from '../../services/dashboardService.js';
 import { formatDateTime } from '../../utils/dateTime.js';
+import { formatKg } from '../../utils/numberFormat.js';
 
 let dashboardData = null;
 let isLoading = false;
@@ -30,10 +31,6 @@ function escapeHtml(value) {
 
 function formatDate(value) {
   return formatDateTime(value, { empty: t('home.summary.noData') });
-}
-
-function formatKg(value) {
-  return Number(value || 0).toFixed(1);
 }
 
 function getFriendlyErrorMessage(error) {

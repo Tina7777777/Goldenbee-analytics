@@ -4,6 +4,7 @@ import { showToast } from '../../components/toast/toast.js';
 import { createApiary, deleteApiary, listMyApiaries, updateApiary } from '../../services/apiaryService.js';
 import { getMyApiariesCardStats } from '../../services/apiaryAnalyticsService.js';
 import { formatDateTime } from '../../utils/dateTime.js';
+import { formatKg } from '../../utils/numberFormat.js';
 
 let apiaries = [];
 let apiaryStatsById = new Map();
@@ -133,7 +134,7 @@ function getApiaryCardMarkup(apiary) {
             </div>
             <div>
               <dt>${t('apiaries.cardStats.latestHoneyKg')}</dt>
-              <dd>${Number(stats.latestTotalHoneyKg || 0).toFixed(1)} ${t('apiaries.hives.supers.kgUnit')}</dd>
+              <dd>${formatKg(stats.latestTotalHoneyKg)} ${t('apiaries.hives.supers.kgUnit')}</dd>
             </div>
             <div>
               <dt>${t('apiaries.cardStats.lastUpdated')}</dt>

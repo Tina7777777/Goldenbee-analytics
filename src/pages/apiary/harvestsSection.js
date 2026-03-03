@@ -3,6 +3,7 @@ import { t } from '../../i18n/i18n.js';
 import { showToast } from '../../components/toast/toast.js';
 import { createHarvestWithItems, deleteHarvest, listHarvestsByHive } from '../../services/harvestsService.js';
 import { formatDateTime } from '../../utils/dateTime.js';
+import { formatKg } from '../../utils/numberFormat.js';
 
 const HARVESTS_LIMIT = 3;
 const FILL_LEVEL_COEFFICIENTS = {
@@ -64,10 +65,6 @@ function estimateForItem(item) {
   }
 
   return frames * coeff;
-}
-
-function formatKg(value) {
-  return Number(value || 0).toFixed(1);
 }
 
 function formatDate(value) {

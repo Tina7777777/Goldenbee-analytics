@@ -3,6 +3,7 @@ import { t } from '../../i18n/i18n.js';
 import { showToast } from '../../components/toast/toast.js';
 import { listRecentFullnessTrend, listRecentHarvestCalibration } from '../../services/analyticsService.js';
 import { formatDateTime } from '../../utils/dateTime.js';
+import { formatKg } from '../../utils/numberFormat.js';
 
 const HARVEST_CALIBRATION_LIMIT = 20;
 const FULLNESS_TREND_DAYS = 14;
@@ -30,10 +31,6 @@ function escapeHtml(value) {
 
 function formatDate(value) {
   return formatDateTime(value, { empty: t('analyticsReports.noData') });
-}
-
-function formatKg(value) {
-  return Number(value || 0).toFixed(1);
 }
 
 function getSelectedPeriodDays() {

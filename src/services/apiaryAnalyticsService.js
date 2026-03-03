@@ -228,3 +228,106 @@ export async function getMyApiariesCardStats() {
 
   return statsByApiaryId;
 }
+
+function createDefaultHiveSupersQuickStats() {
+  return {
+    activeSupersCount: 0,
+    fullSupersCount: 0,
+    averageFullness: null,
+    supersWithSnapshotsCount: 0
+  };
+}
+
+const FULL_SUPER_THRESHOLD_PERCENT = 90;
+
+export async function getHiveSupersQuickStats(hiveIds = []) {
+  ensureSupabaseClient();
+  await ensureAuthenticatedUser();
+
+  const normalizedHiveIds = Array.from(new Set((hiveIds || []).filter(Boolean)));
+  const statsByHiveId = new Map();
+
+  normalizedHiveIds.forEach((hiveId) => {
+    statsByHiveId.set(hiveId, createDefaultHiveSupersQuickStats());
+  });
+
+  if (!normalizedHiveIds.length) {
+    return statsByHiveId;
+  }
+
+  const { data: supers, error: supersError } = await supabase
+    .from('supers')
+    .select('id, hive_id, removed_at')
+    .in('hive_id', normalizedHiveIds);
+
+  if (supersError) {
+    throw supersError;
+  }
+
+  const activeSupers = (supers || []).filter((superItem) => !superItem.removed_at);
+  const activeSuperIds = activeSupers.map((superItem) => superItem.id);
+  const superIdToHiveId = new Map();
+
+  activeSupers.forEach((superItem) => {
+    if (!statsByHiveId.has(superItem.hive_id)) {
+      statsByHiveId.set(superItem.hive_id, createDefaultHiveSupersQuickStats());
+    }
+
+    statsByHiveId.get(superItem.hive_id).activeSupersCount += 1;
+    superIdToHiveId.set(superItem.id, superItem.hive_id);
+  });
+
+  if (!activeSuperIds.length) {
+    return statsByHiveId;
+  }
+
+  const { data: snapshots, error: snapshotsError } = await supabase
+    .from('super_snapshots')
+    .select('super_id, honey_fullness, snapshot_at')
+    .in('super_id', activeSuperIds)
+    .order('super_id', { ascending: true })
+    .order('snapshot_at', { ascending: false });
+
+  if (snapshotsError) {
+    throw snapshotsError;
+  }
+
+  const latestSnapshotBySuperId = new Map();
+  (snapshots || []).forEach((snapshot) => {
+    if (!latestSnapshotBySuperId.has(snapshot.super_id)) {
+      latestSnapshotBySuperId.set(snapshot.super_id, snapshot);
+    }
+  });
+
+  const fullnessSumByHiveId = new Map();
+  const fullnessCountByHiveId = new Map();
+
+  latestSnapshotBySuperId.forEach((snapshot, superId) => {
+    const hiveId = superIdToHiveId.get(superId);
+    if (!hiveId || !statsByHiveId.has(hiveId)) {
+      return;
+    }
+
+    const fullness = Number(snapshot?.honey_fullness || 0);
+    const currentStats = statsByHiveId.get(hiveId);
+
+    currentStats.supersWithSnapshotsCount += 1;
+    if (fullness > FULL_SUPER_THRESHOLD_PERCENT) {
+      currentStats.fullSupersCount += 1;
+    }
+
+    fullnessSumByHiveId.set(hiveId, (fullnessSumByHiveId.get(hiveId) || 0) + fullness);
+    fullnessCountByHiveId.set(hiveId, (fullnessCountByHiveId.get(hiveId) || 0) + 1);
+  });
+
+  fullnessSumByHiveId.forEach((sum, hiveId) => {
+    const count = fullnessCountByHiveId.get(hiveId) || 0;
+    if (!count || !statsByHiveId.has(hiveId)) {
+      return;
+    }
+
+    statsByHiveId.get(hiveId).averageFullness = sum / count;
+  });
+
+  return statsByHiveId;
+}

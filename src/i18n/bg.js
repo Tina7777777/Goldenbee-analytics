@@ -323,6 +323,12 @@ export const bg = {
       editButton: 'Редактирай',
       deleteButton: 'Изтрий',
       codeLabel: 'Код',
+      quickStats: {
+        activeSupers: 'Активни магазини',
+        fullSupers: 'Пълни магазини',
+        averageFullness: 'Средна пълнота',
+        noData: 'Няма данни'
+      },
       confirmDelete: 'Сигурни ли сте, че искате да изтриете този кошер?',
       form: {
         code: 'Код на кошер',
@@ -378,7 +384,7 @@ export const bg = {
           positionRequired: 'Позицията е задължителна.',
           positionTaken: 'Избраната позиция е заета.',
           fullnessRequired: 'Пълнотата е задължителна.',
-          fullnessRange: 'Пълнотата трябва да е между 0 и 200.',
+          fullnessRange: 'Пълнотата трябва да е между 0 и 130.',
           notAuthenticated: 'Трябва да влезете в профила си.',
           missingConfig: 'Липсва конфигурация за Supabase. Провери .env настройките.'
         }

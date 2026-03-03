@@ -323,6 +323,12 @@ export const en = {
       editButton: 'Edit',
       deleteButton: 'Delete',
       codeLabel: 'Code',
+      quickStats: {
+        activeSupers: 'Active supers',
+        fullSupers: 'Full supers',
+        averageFullness: 'Average fullness',
+        noData: 'No data'
+      },
       confirmDelete: 'Are you sure you want to delete this hive?',
       form: {
         code: 'Hive code',
@@ -378,7 +384,7 @@ export const en = {
           positionRequired: 'Position is required.',
           positionTaken: 'Selected position is already taken.',
           fullnessRequired: 'Fullness is required.',
-          fullnessRange: 'Fullness must be between 0 and 200.',
+          fullnessRange: 'Fullness must be between 0 and 130.',
           notAuthenticated: 'You must be signed in.',
           missingConfig: 'Supabase configuration is missing. Check .env settings.'
         }

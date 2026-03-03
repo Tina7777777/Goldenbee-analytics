@@ -2,6 +2,7 @@ import { t } from '../../i18n/i18n.js';
 import { showToast } from '../../components/toast/toast.js';
 import { getApiaryCurrentHoneyKg } from '../../services/apiaryAnalyticsService.js';
 import { formatDateTime } from '../../utils/dateTime.js';
+import { formatKg } from '../../utils/numberFormat.js';
 
 let currentApiaryId = '';
 let isHoneyEstimateLoading = true;
@@ -14,10 +15,6 @@ function createDefaultHoneyEstimate() {
     supersWithSnapshotsCount: 0,
     lastSnapshotAt: null
   };
-}
-
-function formatTotalKg(value) {
-  return Number(value || 0).toFixed(1);
 }
 
 function formatLastUpdated(value) {

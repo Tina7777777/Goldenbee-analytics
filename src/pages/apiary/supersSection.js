@@ -3,8 +3,10 @@ import { showToast } from '../../components/toast/toast.js';
 import { createSnapshot, listSnapshotsBySuper } from '../../services/superSnapshotsService.js';
 import { installSuper, listSupersByHive, removeSuper } from '../../services/supersService.js';
 import { formatDateTime } from '../../utils/dateTime.js';
+import { formatKg } from '../../utils/numberFormat.js';
 
 const SNAPSHOT_LIMIT = 1;
+const MAX_SNAPSHOT_FULLNESS_PERCENT = 130;
 
 const stateByHive = {};
 const containersByHive = new Map();
@@ -51,7 +53,7 @@ function formatKgFromFullness(fullness) {
     return '-';
   }
 
-  return `${(Number(fullness) / 10).toFixed(1)} ${t('apiaries.hives.supers.kgUnit')}`;
+  return `${formatKg(Number(fullness) / 10)} ${t('apiaries.hives.supers.kgUnit')}`;
 }
 
 function getSupersFriendlyErrorMessage(error) {
@@ -146,7 +148,7 @@ function activeSupersMarkup(hiveId, hiveState, activeSupers) {
               <form class="vstack gap-2" data-role="super-snapshot-form" data-hive-id="${hiveId}" data-super-id="${superItem.id}" novalidate>
                 <div>
                   <label class="form-label" for="snapshot-fullness-${superItem.id}">${t('apiaries.hives.supers.fullnessInput')}</label>
-                  <input id="snapshot-fullness-${superItem.id}" name="honey_fullness" type="number" min="0" max="200" step="0.01" class="form-control" required />
+                  <input id="snapshot-fullness-${superItem.id}" name="honey_fullness" type="number" min="0" max="${MAX_SNAPSHOT_FULLNESS_PERCENT}" step="0.01" class="form-control" required />
                 </div>
                 <div>
                   <label class="form-label" for="snapshot-notes-${superItem.id}">${t('apiaries.hives.supers.snapshotNotes')}</label>
@@ -258,7 +260,11 @@ async function triggerChanged(hiveId) {
     return;
   }
 
-  await onChanged();
+  try {
+    await onChanged();
+  } catch (error) {
+    console.warn('Supers onChanged callback failed after successful update.', error);
+  }
 }
 
 async function handleInstallSuperSubmit(formElement) {
@@ -334,7 +340,7 @@ async function handleSuperSnapshotSubmit(formElement) {
     return;
   }
 
-  if (honeyFullness < 0 || honeyFullness > 200) {
+  if (honeyFullness < 0 || honeyFullness > MAX_SNAPSHOT_FULLNESS_PERCENT) {
     showToast(t('apiaries.hives.supers.errors.fullnessRange'), t('common.error'));
     return;
   }
