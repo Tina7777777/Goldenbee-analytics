@@ -323,6 +323,11 @@ export const bg = {
       editButton: 'Редактирай',
       deleteButton: 'Изтрий',
       codeLabel: 'Код',
+      search: {
+        label: 'Търсене на кошер по код',
+        placeholder: 'Например: BG-BS-002',
+        noMatches: 'Няма кошер с такъв код в този пчелин.'
+      },
       quickStats: {
         activeSupers: 'Активни магазини',
         fullSupers: 'Пълни магазини',

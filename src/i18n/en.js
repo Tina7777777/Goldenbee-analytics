@@ -323,6 +323,11 @@ export const en = {
       editButton: 'Edit',
       deleteButton: 'Delete',
       codeLabel: 'Code',
+      search: {
+        label: 'Search hive by code',
+        placeholder: 'Example: BG-BS-002',
+        noMatches: 'No hive with this code was found in this apiary.'
+      },
       quickStats: {
         activeSupers: 'Active supers',
         fullSupers: 'Full supers',

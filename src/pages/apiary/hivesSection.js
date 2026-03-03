@@ -24,6 +24,8 @@ let initializedApiaryId = '';
 let currentContainerEl = null;
 let onHiveChangedCallback = null;
 let onDataChangedCallback = null;
+let hiveCodeSearchQuery = '';
+let isSearchEventBound = false;
 
 function createDefaultHivePanelState() {
   return {
@@ -132,6 +134,15 @@ function formatAverageFullness(value) {
   return `${formatKg(value)}%`;
 }
 
+function getFilteredHives() {
+  const normalizedQuery = hiveCodeSearchQuery.toLowerCase();
+  if (!normalizedQuery) {
+    return hives;
+  }
+
+  return hives.filter((hive) => String(hive.code || '').toLowerCase().includes(normalizedQuery));
+}
+
 async function loadHiveSupersQuickStats() {
   const hiveIds = hives.map((hive) => hive.id);
   hiveSupersQuickStatsById = await getHiveSupersQuickStats(hiveIds);
@@ -171,6 +182,8 @@ function hiveModalMarkup() {
 }
 
 function hivesListMarkup() {
+  const visibleHives = getFilteredHives();
+
   if (isHivesLoading) {
     return `<div class="page-card"><p class="mb-0 text-secondary">${t('common.loading')}</p></div>`;
   }
@@ -187,6 +200,18 @@ function hivesListMarkup() {
     `;
   }
 
+  if (!visibleHives.length) {
+    return `
+      <div class="page-card">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
+          <h2 class="h5 mb-0">${t('apiaries.hives.title')}</h2>
+          <button type="button" class="btn btn-outline-primary w-100 w-md-auto" data-action="open-hive-create">${t('apiaries.hives.addButton')}</button>
+        </div>
+        <p class="text-secondary mb-0">${t('apiaries.hives.search.noMatches')}</p>
+      </div>
+    `;
+  }
+
   return `
     <div class="page-card">
       <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
@@ -194,7 +219,7 @@ function hivesListMarkup() {
         <button type="button" class="btn btn-outline-primary w-100 w-md-auto" data-action="open-hive-create">${t('apiaries.hives.addButton')}</button>
       </div>
       <div class="list-group">
-        ${hives
+        ${visibleHives
           .map((hive) => {
             const panelState = getHivePanelState(hive.id);
             const quickStats = getHiveSupersQuickStatsForHive(hive.id);
@@ -587,7 +612,16 @@ export function initHivesSection({
     isHiveSaving = false;
     hivePanelsState = {};
     hiveSupersQuickStatsById = new Map();
+    hiveCodeSearchQuery = '';
     requestedHiveId = new URLSearchParams(window.location.search).get('hive') || '';
+  }
+
+  if (!isSearchEventBound) {
+    isSearchEventBound = true;
+    window.addEventListener('gba:hives-search-changed', (event) => {
+      hiveCodeSearchQuery = String(event?.detail?.query || '').trim();
+      renderHivesListOnly();
+    });
   }
 
   containerEl.innerHTML = renderHivesSection();

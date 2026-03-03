@@ -2,6 +2,19 @@
   max-width: 920px;
 }
 
+.apiary-page #apiary-hives-search-input {
+  background-color: #fffaf0;
+  border-color: #d6be93;
+  color: #2d2112;
+}
+
+.apiary-page #apiary-hives-search-input:focus,
+.apiary-page #apiary-hives-search-input:focus-visible {
+  background-color: #fffdf6;
+  border-color: #b98a4a;
+  box-shadow: 0 0 0 0.2rem rgba(185, 138, 74, 0.2);
+}
+
 .apiary-page #apiary-hives-list .list-group {
   padding: 0.625rem;
   border: 1px solid var(--honey-300);
