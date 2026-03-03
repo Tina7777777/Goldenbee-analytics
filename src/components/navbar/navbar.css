@@ -1,7 +1,21 @@
 .app-navbar {
   border-bottom: 1px solid var(--gba-border-color);
-  background: linear-gradient(180deg, #fff9ea 0%, #fff4d9 100%);
+  background: linear-gradient(180deg, #f8dd9f 0%, #f2c971 100%);
   box-shadow: 0 8px 20px -16px var(--gba-shadow-color);
+}
+
+.app-navbar .navbar-brand {
+  color: #5d3e0f;
+}
+
+.app-navbar .nav-link {
+  color: #6f4b14;
+}
+
+.app-navbar .nav-link.active,
+.app-navbar .nav-link:focus,
+.app-navbar .nav-link:hover {
+  color: #4b3008;
 }
 
 .auth-email {
