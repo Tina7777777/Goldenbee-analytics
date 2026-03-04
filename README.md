@@ -1,60 +1,73 @@
 # GoldenBee Analytics
 
 GoldenBee Analytics is a capstone project for **Software Technologies with AI (SoftUni AI)**.
-It is a static SPA (URL-driven multi-page navigation) for beekeepers to manage apiaries, hives, inspections, supers, harvests, profile visibility, analytics, and profile photo uploads.
+It is a static SPA for beekeepers to manage apiaries, hives, inspections, supers, harvests, profile visibility, analytics, and profile photos.
 
-## Capstone Metadata
+## 📋 Project Description
 
-- **Author:** TODO
-- **Email:** TODO
-- **GitHub Repo:** TODO
-- **Live Project URL:** TODO
-- **Sample credentials (demo):** TODO
+GoldenBee Analytics provides practical, day-to-day beekeeping registry and hive journal workflows in one place.
 
-## Features
+**Key Features:**
+- **Authentication**: Registration, login, logout with Supabase Auth
+- **Role-Based Access**: `user` and `admin` roles via `user_roles`
+- **Profile Management**: Public/private beekeeper profile visibility with admin moderation
+- **Apiary Management**: Create and manage apiaries
+- **Hive Management**: Create and manage hives inside apiaries
+- **Inspections**: Record hive inspections with server-side date validation
+- **Supers & Snapshots**: Track supers and super state over time
+- **Harvest Tracking**: Manage harvest records and harvest items
+- **Analytics**: Apiary and hive-level indicators and trends
+- **Photo Storage**: Upload and manage profile photos in Supabase Storage
+- **Internationalization**: Bulgarian-first UI (`bg` default) with English dictionary fallback
 
-- Registration, login, logout with Supabase Auth
-- Role model (`user`, `admin`) via `user_roles`
-- Public/Private beekeeper profiles with moderation by admin
-- Apiaries CRUD
-- Hives CRUD within apiaries
-- Hive inspections (date auto-generated server-side)
-- Supers and super snapshots
-- Harvests and harvest items
-- Analytics reports (calibration and trend)
-- Profile photo upload and open/download using Supabase Storage
-- Bulgarian-first UI (`bg` default) with `en` fallback
+## 🏗️ Architecture
 
-## Tech Stack
+GoldenBee Analytics follows a modular static SPA architecture with URL-driven routing:
 
-- **Frontend:** HTML, CSS, JavaScript, Bootstrap, Bootstrap Icons
-- **Backend:** Supabase (PostgreSQL, Auth, Storage)
-- **Tooling:** Node.js, npm, Vite
-- **Architecture:** Static SPA with client-side routing (History API)
-- **Module system:** ES Modules
+### Frontend
+- **Framework**: Vanilla JavaScript (ES6 modules)
+- **UI Library**: Bootstrap 5 + Bootstrap Icons
+- **Build Tool**: Vite
+- **Routing**: Custom History API router with auth/role guards
+- **Structure**: Modular separation of pages, components, services, i18n, and utils
 
-## Architecture Summary
+### Backend
+- **Platform**: Supabase (Backend-as-a-Service)
+- **Database**: PostgreSQL with versioned SQL migrations
+- **Authentication**: Supabase Auth
+- **Storage**: Supabase Storage (`profile-photos` bucket)
+- **Security**: Row Level Security (RLS) policies and role checks
 
-- Single entry: `index.html`
-- Bootstrap and app bootstrap: `src/main.js`
-- Router and guards: `src/router/router.js`
-- UI screens: `src/pages/<page>/<page>.js` + `<page>.css`
-- Shared components: `src/components/*`
-- Data access/services: `src/services/*`
-- i18n: `src/i18n/i18n.js`, `src/i18n/bg.js`, `src/i18n/en.js`
-- DB migrations: `supabase/migrations/*`
+### Deployment
+- **Hosting**: Netlify
+- **Build Output**: `dist/`
+- **SPA Redirects**: Configured in `netlify.toml` (`/* -> /index.html`)
 
-## Routes
+### Technology Stack
+```text
+Frontend:
+├── Vanilla JavaScript (ES6+)
+├── Bootstrap 5
+├── Bootstrap Icons
+└── Vite
 
-- `/` Home (public directory)
-- `/login`, `/register` (guest only)
-- `/dashboard`, `/profile`, `/apiaries`, `/apiary?id=:id`, `/hive?id=:id`, `/analytics` (authenticated)
-- `/admin` (admin only)
-- Unknown routes -> Not Found screen
+Backend:
+├── Supabase
+├── PostgreSQL
+├── Supabase Auth
+└── Supabase Storage
 
-## Database Schema (Main Tables)
+Development:
+├── Node.js & npm
+└── ES Modules
 
-Core tables:
+Deployment:
+└── Netlify
+```
+
+## 🗄️ Database Schema Design
+
+Main application tables:
 
 - `profiles`
 - `user_roles`
@@ -95,79 +108,169 @@ erDiagram
   profiles ||--o{ photos : profile_photos
 ```
 
-## Security
+### Security
+- RLS is enabled on user data tables.
+- Owner-scoped access is enforced through policies.
+- Admin-specific actions use role checks and controlled RPCs.
+- Profile photo access is controlled through storage policies.
 
-- Row-Level Security is enabled on all user data tables.
-- Access control is owner-based by default and admin-based where needed.
-- Role checks use `user_roles` and helper function `public.is_admin(uid)`.
-- Admin moderation is enforced with policy + RPC (`admin_unpublish_profile`).
-- Storage bucket `profile-photos` uses owner policies on `storage.objects`.
+## 🚀 Local Development Setup Guide
 
-## Supabase Migrations
-
-Schema is versioned through SQL migrations in `supabase/migrations/`.
-Do not edit old migrations after they are applied; always add a new migration.
-
-## Local Development Setup
-
-### 1) Prerequisites
-
+### Prerequisites
 - Node.js 20+
 - npm 10+
-- Supabase project (or local Supabase stack)
+- Supabase project (cloud or local stack)
 
-### 2) Install dependencies
-
+### 1) Clone and install dependencies
 ```bash
 npm install
 ```
 
-### 3) Configure environment
-
-Copy `.env.example` to `.env` and set valid values:
+### 2) Configure environment variables
+Create a `.env` file in the project root:
 
 ```dotenv
-VITE_SUPABASE_URL=...
-VITE_SUPABASE_ANON_KEY=...
+VITE_SUPABASE_URL=https://your-project-ref.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-public-key
 ```
 
-### 4) Run app
+### 3) Apply database migrations
+Use Supabase CLI (recommended):
 
+```bash
+supabase link --project-ref your-project-ref
+supabase db push
+```
+
+Current migration files:
+- `20260228000100_initial_schema.sql`
+- `20260228000200_002_beekeeping_core.sql`
+- `20260302000100_profiles_admin_moderation.sql`
+- `20260302000200_admin_unpublish_profile_rpc.sql`
+- `20260303000100_profile_photos_storage.sql`
+- `20260303000200_public_profile_photo_visibility.sql`
+- `20260303000300_sync_public_hive_count.sql`
+- `20260303000400_harvests_calibration_estimated_kg.sql`
+
+### 4) Start development server
 ```bash
 npm run dev
 ```
 
-### 5) Build and preview
-
+### 5) Build and preview production
 ```bash
 npm run build
 npm run preview
 ```
 
-## Deployment
+## 📁 Key Folders and Files
 
-- Netlify config is in `netlify.toml`
-- SPA fallback redirect is configured (`/* -> /index.html`)
-- After deploy, set and publish the **Live Project URL** in this README
+### Project Structure Overview
 
-## Key Folders and Files
+```text
+Goldenbee-analytics/
+├── index.html
+├── package.json
+├── vite.config.js
+├── netlify.toml
+├── README.md
+├── src/
+│   ├── main.js
+│   ├── assets/
+│   │   └── img/
+│   ├── components/
+│   │   ├── footer/
+│   │   ├── navbar/
+│   │   └── toast/
+│   ├── i18n/
+│   │   ├── bg.js
+│   │   ├── en.js
+│   │   └── i18n.js
+│   ├── lib/
+│   ├── pages/
+│   │   ├── admin/
+│   │   ├── analytics/
+│   │   ├── apiaries/
+│   │   ├── apiary/
+│   │   ├── dashboard/
+│   │   ├── hive/
+│   │   ├── home/
+│   │   ├── login/
+│   │   ├── notfound/
+│   │   ├── profile/
+│   │   └── register/
+│   ├── router/
+│   │   └── router.js
+│   ├── services/
+│   ├── styles/
+│   │   ├── app.css
+│   │   └── variables.css
+│   └── utils/
+└── supabase/
+    ├── config.toml
+    ├── seed.sql
+    └── migrations/
+```
 
-- `src/pages/` — page modules (render + logic per screen)
-- `src/services/` — Supabase data access and business operations
-- `src/router/router.js` — route resolution, guards, navigation lifecycle
-- `src/i18n/` — dictionaries and translation runtime
-- `src/components/` — reusable UI parts (navbar, footer, toast)
-- `supabase/migrations/` — database and RLS schema history
+### File Descriptions
 
-## Capstone Checklist
+#### Root Files
+- **`index.html`**: Single HTML entry point for the SPA
+- **`package.json`**: Dependencies and scripts (`dev`, `build`, `preview`)
+- **`vite.config.js`**: Vite configuration
+- **`netlify.toml`**: Netlify build and SPA redirect rules
+- **`README.md`**: Project documentation
 
-- [x] Multi-page URL-driven app with modular architecture
-- [x] 5+ screens with responsive UI
-- [x] Supabase DB with relationships and migrations
-- [x] Supabase Auth (register/login/logout)
-- [x] Roles + admin panel + RLS
-- [x] Supabase Storage upload/download workflow
-- [x] Public Git history with ongoing commits
-- [ ] Live URL filled in metadata
-- [ ] Demo credentials filled in metadata
-- [ ] Author/email/repo metadata filled in
+#### Source (`src/`)
+- **`main.js`**: Application bootstrap, app setup, and router startup
+- **`router/router.js`**: Route map, guard logic, and URL navigation lifecycle
+- **`pages/*`**: Screen-specific render/init modules
+- **`components/*`**: Shared UI components (navbar, footer, toast)
+- **`services/*`**: Supabase data access and domain operations
+- **`i18n/*`**: Localization dictionaries and translation runtime
+- **`utils/*`**: Shared helper utilities (DOM, navigation, date, formatting)
+- **`styles/*`**: Global style tokens and app-wide styles
+
+#### Supabase (`supabase/`)
+- **`migrations/`**: Versioned SQL schema and policy migrations
+- **`seed.sql`**: Seed data script (if used in your environment)
+- **`config.toml`**: Supabase local/project configuration
+
+## 🌐 Routes
+
+- `/` → Home (public)
+- `/login` → Login (guest only)
+- `/register` → Register (guest only)
+- `/dashboard` → Dashboard (authenticated)
+- `/profile` → Profile (authenticated)
+- `/apiaries` → Apiaries list (authenticated)
+- `/apiary?id={apiaryId}` → Apiary details (authenticated)
+- `/hive?id={hiveId}` → Hive details (authenticated)
+- `/analytics` → Analytics (authenticated)
+- `/admin` → Admin panel (admin only)
+- `*` → Not Found page
+
+## 🔧 Commands
+
+```bash
+npm install
+npm run dev
+npm run build
+npm run preview
+```
+
+## 📝 Development Guidelines
+
+- Keep modular boundaries between pages, services, components, and utils.
+- Use ES modules consistently.
+- Do not edit previously applied migrations; always add new migration files.
+- Keep user-facing strings in i18n dictionaries, not hardcoded in services.
+- Enforce auth and role checks both in router flow and database policies.
+
+## ✅ Capstone Metadata (Fill Before Final Submission)
+
+- **Author:** TODO
+- **Email:** TODO
+- **GitHub Repo:** TODO
+- **Live Project URL:** TODO
+- **Sample credentials (demo):** TODO
