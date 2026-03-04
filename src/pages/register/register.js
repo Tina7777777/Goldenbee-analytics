@@ -8,11 +8,11 @@ function getSafeReturnUrl() {
   const returnUrl = params.get('returnUrl') || params.get('return');
 
   if (!returnUrl) {
-    return '/dashboard';
+    return '/apiaries';
   }
 
   if (!returnUrl.startsWith('/') || returnUrl.startsWith('//')) {
-    return '/dashboard';
+    return '/apiaries';
   }
 
   return returnUrl;

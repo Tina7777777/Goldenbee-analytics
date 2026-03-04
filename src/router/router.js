@@ -117,7 +117,7 @@ function resolveRoute(pathname, searchParams) {
 
 function guardRedirectPath(guard, session) {
   if (guard === 'guest' && session.isAuthed) {
-    return '/dashboard';
+    return '/apiaries';
   }
 
   if (guard === 'auth' && !session.isAuthed) {
