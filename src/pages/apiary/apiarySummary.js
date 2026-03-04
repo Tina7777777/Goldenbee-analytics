@@ -78,7 +78,7 @@ function honeySummaryMarkup() {
           ? ''
           : `
             <h2 class="h6 mb-2">${t('apiaries.honeySummary.title')}</h2>
-            <p class="display-6 mb-2">${formatTotalKg(honeyEstimate.totalKg)} ${t('apiaries.hives.supers.kgUnit')}</p>
+            <p class="display-6 mb-2">${formatKg(honeyEstimate.totalKg)} ${t('apiaries.hives.supers.kgUnit')}</p>
             <p class="small text-secondary mb-1">${t('apiaries.honeySummary.activeSupers')}: ${honeyEstimate.supersCount}</p>
             <p class="small text-secondary mb-1">${t('apiaries.honeySummary.withData')}: ${honeyEstimate.supersWithSnapshotsCount}</p>
             <p class="small text-secondary mb-0">${t('apiaries.honeySummary.lastUpdated')}: ${formatLastUpdated(honeyEstimate.lastSnapshotAt)}</p>
