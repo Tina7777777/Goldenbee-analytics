@@ -6,7 +6,7 @@ import { formatDateTime } from '../../utils/dateTime.js';
 import { formatKg } from '../../utils/numberFormat.js';
 
 const FULLNESS_TREND_DAYS = 14;
-const PERIOD_OPTIONS = ['7', '14', '30', '365', 'all'];
+const PERIOD_OPTIONS = ['1', '7', '14', '30', '365', 'all'];
 
 let isLoading = false;
 let reportData = createDefaultReportData();

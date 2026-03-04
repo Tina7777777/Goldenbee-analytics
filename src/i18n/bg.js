@@ -261,6 +261,7 @@ export const bg = {
       title: 'Филтър период',
       period: 'Период',
       apiary: 'Пчелин',
+      days1: '1 ден',
       days7: '7 дни',
       days14: '14 дни',
       days30: '30 дни',
