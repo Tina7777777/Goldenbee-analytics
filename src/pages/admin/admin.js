@@ -4,6 +4,8 @@ import { showToast } from '../../components/toast/toast.js';
 import { adminUnpublishProfile, getPublicProfiles } from '../../services/profileService.js';
 
 let publicProfiles = [];
+let visibleProfiles = [];
+let searchTerm = '';
 let isLoading = false;
 let processingProfileId = '';
 
@@ -36,6 +38,23 @@ function loadingMarkup() {
       <p class="mb-0 text-secondary">${t('common.loading')}</p>
     </div>
   `;
+}
+
+function matchesSearch(profile, query) {
+  if (!query) {
+    return true;
+  }
+
+  const displayName = String(profile.display_name || '').toLowerCase();
+  const publicLocation = profile.show_location ? String(profile.location_text || '').toLowerCase() : '';
+
+  return displayName.includes(query) || publicLocation.includes(query);
+}
+
+function applySearchFilter() {
+  const query = searchTerm.trim().toLowerCase();
+  visibleProfiles = publicProfiles.filter((profile) => matchesSearch(profile, query));
+  renderContent();
 }
 
 function publicProfileCardMarkup(profile) {
@@ -76,7 +95,7 @@ function publicProfileCardMarkup(profile) {
 }
 
 function listMarkup() {
-  if (!publicProfiles.length) {
+  if (!visibleProfiles.length) {
     return `
       <div class="page-card">
         <p class="mb-0">${t('admin.publicDirectory.empty')}</p>
@@ -86,7 +105,7 @@ function listMarkup() {
 
   return `
     <div class="vstack gap-3">
-      ${publicProfiles.map((profile) => publicProfileCardMarkup(profile)).join('')}
+      ${visibleProfiles.map((profile) => publicProfileCardMarkup(profile)).join('')}
     </div>
   `;
 }
@@ -106,8 +125,10 @@ async function loadPublicProfiles() {
 
   try {
     publicProfiles = await getPublicProfiles();
+    applySearchFilter();
   } catch (error) {
     publicProfiles = [];
+    visibleProfiles = [];
     showToast(getFriendlyErrorMessage(error), t('common.error'));
   } finally {
     isLoading = false;
@@ -125,6 +146,7 @@ async function handleUnpublish(profileId) {
     renderContent();
     await adminUnpublishProfile(profileId);
     publicProfiles = publicProfiles.filter((item) => item.id !== profileId);
+    applySearchFilter();
     showToast(t('admin.toasts.unpublishSuccess'), t('common.success'));
   } catch (error) {
     showToast(getFriendlyErrorMessage(error), t('common.error'));
@@ -138,8 +160,15 @@ export function render() {
   return `
     <section class="admin-page">
       <h1 class="mb-4">${t('pages.admin.title')}</h1>
-      <div class="page-card">
-        <p class="mb-0">${t('pages.admin.description')}</p>
+      <div class="page-card mb-3">
+        <label class="form-label" for="admin-public-profiles-search">${t('home.directory.searchLabel')}</label>
+        <input
+          id="admin-public-profiles-search"
+          type="search"
+          class="form-control"
+          placeholder="${t('home.directory.searchPlaceholder')}"
+          value="${escapeHtml(searchTerm)}"
+        />
       </div>
       <section class="mt-3">
         <h2 class="h5 mb-3">${t('admin.publicDirectory.title')}</h2>
@@ -151,6 +180,8 @@ export function render() {
 
 export function init() {
   publicProfiles = [];
+  visibleProfiles = [];
+  searchTerm = '';
   isLoading = true;
   processingProfileId = '';
   renderContent();
@@ -159,6 +190,14 @@ export function init() {
   const pageElement = document.querySelector('.admin-page');
   if (!pageElement) {
     return;
+  }
+
+  const searchInput = document.getElementById('admin-public-profiles-search');
+  if (searchInput) {
+    searchInput.addEventListener('input', (event) => {
+      searchTerm = String(event.target?.value || '');
+      applySearchFilter();
+    });
   }
 
   pageElement.addEventListener('click', (event) => {
