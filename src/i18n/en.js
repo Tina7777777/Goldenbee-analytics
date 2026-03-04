@@ -260,6 +260,7 @@ export const en = {
     filters: {
       title: 'Period filter',
       period: 'Period',
+      apiary: 'Apiary',
       days7: '7 days',
       days14: '14 days',
       days30: '30 days',

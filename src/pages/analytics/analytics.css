@@ -6,3 +6,7 @@
 .analytics-page .table td {
   vertical-align: middle;
 }
+
+.analytics-page .analytics-row--inactive td {
+  color: var(--bs-secondary-color);
+}
