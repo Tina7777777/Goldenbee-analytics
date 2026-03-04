@@ -1,6 +1,14 @@
 import { supabase } from './supabaseClient.js';
 import { getSession } from './authService.js';
 
+const PUBLIC_PROFILES_CACHE_TTL_MS = 45_000;
+
+let publicProfilesCache = {
+  data: null,
+  expiresAt: 0
+};
+let publicProfilesRequestPromise = null;
+
 function ensureSupabaseClient() {
   if (!supabase) {
     throw new Error('Supabase client is not configured.');
@@ -74,62 +82,34 @@ function normalizeProfileId(profileId) {
   return normalized;
 }
 
-export async function getMyProfile() {
-  ensureSupabaseClient();
-  const userId = await getCurrentUserId();
-
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', userId)
-    .maybeSingle();
-
-  if (error) {
-    throw error;
-  }
-
-  return data;
+function clonePublicProfiles(profiles) {
+  return (profiles || []).map((profile) => ({ ...profile }));
 }
 
-export async function upsertMyProfile(payload = {}) {
-  ensureSupabaseClient();
-  const userId = await getCurrentUserId();
-  const normalized = normalizeProfilePayload(payload);
-
-  const { data: updatedProfile, error: updateError } = await supabase
-    .from('profiles')
-    .update(normalized)
-    .eq('id', userId)
-    .select('*')
-    .maybeSingle();
-
-  if (updateError) {
-    throw updateError;
-  }
-
-  if (updatedProfile) {
-    return updatedProfile;
-  }
-
-  const { data: insertedProfile, error: insertError } = await supabase
-    .from('profiles')
-    .insert({
-      id: userId,
-      ...normalized
-    })
-    .select('*')
-    .single();
-
-  if (insertError) {
-    throw insertError;
-  }
-
-  return insertedProfile;
+function clearPublicProfilesCache() {
+  publicProfilesCache = {
+    data: null,
+    expiresAt: 0
+  };
 }
 
-export async function getPublicProfiles() {
-  ensureSupabaseClient();
+function getCachedPublicProfiles() {
+  const now = Date.now();
+  if (!publicProfilesCache.data || publicProfilesCache.expiresAt <= now) {
+    return null;
+  }
 
+  return clonePublicProfiles(publicProfilesCache.data);
+}
+
+function setCachedPublicProfiles(profiles) {
+  publicProfilesCache = {
+    data: clonePublicProfiles(profiles),
+    expiresAt: Date.now() + PUBLIC_PROFILES_CACHE_TTL_MS
+  };
+}
+
+async function fetchPublicProfilesFromDb() {
   const { data, error } = await supabase
     .from('profiles')
     .select('id,display_name,about,location_text,contacts,public_hive_count,show_location,show_hive_count,show_contacts,is_public_profile')
@@ -188,6 +168,82 @@ export async function getPublicProfiles() {
   }));
 }
 
+export async function getMyProfile() {
+  ensureSupabaseClient();
+  const userId = await getCurrentUserId();
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', userId)
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+export async function upsertMyProfile(payload = {}) {
+  ensureSupabaseClient();
+  const userId = await getCurrentUserId();
+  const normalized = normalizeProfilePayload(payload);
+
+  const { data: updatedProfile, error: updateError } = await supabase
+    .from('profiles')
+    .update(normalized)
+    .eq('id', userId)
+    .select('*')
+    .maybeSingle();
+
+  if (updateError) {
+    throw updateError;
+  }
+
+  if (updatedProfile) {
+    clearPublicProfilesCache();
+    return updatedProfile;
+  }
+
+  const { data: insertedProfile, error: insertError } = await supabase
+    .from('profiles')
+    .insert({
+      id: userId,
+      ...normalized
+    })
+    .select('*')
+    .single();
+
+  if (insertError) {
+    throw insertError;
+  }
+
+  clearPublicProfilesCache();
+
+  return insertedProfile;
+}
+
+export async function getPublicProfiles() {
+  ensureSupabaseClient();
+  const cachedProfiles = getCachedPublicProfiles();
+  if (cachedProfiles) {
+    return cachedProfiles;
+  }
+
+  if (!publicProfilesRequestPromise) {
+    publicProfilesRequestPromise = fetchPublicProfilesFromDb();
+  }
+
+  try {
+    const profiles = await publicProfilesRequestPromise;
+    setCachedPublicProfiles(profiles);
+    return clonePublicProfiles(profiles);
+  } finally {
+    publicProfilesRequestPromise = null;
+  }
+}
+
 export async function adminUnpublishProfile(profileId) {
   ensureSupabaseClient();
   await getCurrentUserId();
@@ -199,6 +255,8 @@ export async function adminUnpublishProfile(profileId) {
   if (error) {
     throw error;
   }
+
+  clearPublicProfilesCache();
 
   return { id: normalizedProfileId, is_public_profile: false };
 }
