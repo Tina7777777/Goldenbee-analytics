@@ -267,10 +267,3 @@ npm run preview
 - Keep user-facing strings in i18n dictionaries, not hardcoded in services.
 - Enforce auth and role checks both in router flow and database policies.
 
-## ✅ Capstone Metadata (Fill Before Final Submission)
-
-- **Author:** TODO
-- **Email:** TODO
-- **GitHub Repo:** TODO
-- **Live Project URL:** TODO
-- **Sample credentials (demo):** TODO
