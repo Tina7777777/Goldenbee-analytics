@@ -157,23 +157,30 @@ export async function getPublicProfiles() {
     throw photoError;
   }
 
-  const latestPhotoByProfileId = new Map();
+  const latestPhotoRowsByProfileId = new Map();
   for (const row of photoRows || []) {
-    if (!row?.profile_id || latestPhotoByProfileId.has(row.profile_id)) {
+    if (!row?.profile_id || latestPhotoRowsByProfileId.has(row.profile_id)) {
       continue;
     }
 
-    const { data: signedData, error: signedError } = await supabase.storage
-      .from(row.bucket_id || 'profile-photos')
-      .createSignedUrl(row.object_path || '', 3600);
-
-    if (signedError) {
-      latestPhotoByProfileId.set(row.profile_id, '');
-      continue;
-    }
-
-    latestPhotoByProfileId.set(row.profile_id, signedData?.signedUrl || '');
+    latestPhotoRowsByProfileId.set(row.profile_id, row);
   }
+
+  const latestPhotoByProfileId = new Map();
+  await Promise.all(
+    Array.from(latestPhotoRowsByProfileId.entries()).map(async ([profileId, row]) => {
+      const { data: signedData, error: signedError } = await supabase.storage
+        .from(row.bucket_id || 'profile-photos')
+        .createSignedUrl(row.object_path || '', 3600);
+
+      if (signedError) {
+        latestPhotoByProfileId.set(profileId, '');
+        return;
+      }
+
+      latestPhotoByProfileId.set(profileId, signedData?.signedUrl || '');
+    })
+  );
 
   return publicProfiles.map((profile) => ({
     ...profile,
