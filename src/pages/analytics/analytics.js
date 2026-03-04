@@ -1,11 +1,10 @@
 import './analytics.css';
 import { t } from '../../i18n/i18n.js';
 import { showToast } from '../../components/toast/toast.js';
-import { listRecentFullnessTrend, listRecentHarvestCalibration } from '../../services/analyticsService.js';
+import { listApiaryHiveYieldSummary } from '../../services/analyticsService.js';
 import { formatDateTime } from '../../utils/dateTime.js';
 import { formatKg } from '../../utils/numberFormat.js';
 
-const HARVEST_CALIBRATION_LIMIT = 20;
 const FULLNESS_TREND_DAYS = 14;
 const PERIOD_OPTIONS = ['7', '14', '30', '365', 'all'];
 
@@ -14,10 +13,7 @@ let reportData = createDefaultReportData();
 let selectedPeriod = String(FULLNESS_TREND_DAYS);
 
 function createDefaultReportData() {
-  return {
-    calibrationRows: [],
-    trendRows: []
-  };
+  return [];
 }
 
 function escapeHtml(value) {
@@ -60,113 +56,69 @@ function getFriendlyErrorMessage(error) {
   return t('analyticsReports.errors.generic');
 }
 
-function deltaBadgeMarkup(delta) {
-  if (delta === null || delta === undefined) {
-    return `<span class="badge text-bg-secondary">-</span>`;
+function apiaryYieldGroupsMarkup() {
+  const groups = reportData || [];
+  if (!groups.length) {
+    return `<div class="page-card"><p class="mb-0 text-secondary">${t('analyticsReports.empty.apiaryHiveYield')}</p></div>`;
   }
 
-  if (delta > 0) {
-    return `<span class="badge text-bg-success">+${formatKg(delta)}</span>`;
-  }
+  return groups
+    .map((group) => {
+      const apiaryLink = group.apiary_id
+        ? `<a href="/apiary?id=${group.apiary_id}" data-link="spa">${escapeHtml(group.apiary_name || t('analyticsReports.noData'))}</a>`
+        : escapeHtml(group.apiary_name || t('analyticsReports.noData'));
 
-  if (delta < 0) {
-    return `<span class="badge text-bg-danger">${formatKg(delta)}</span>`;
-  }
+      const rowsMarkup = (group.rows || [])
+        .map((row) => {
+          const hiveCell = group.apiary_id && row.hive_id
+            ? `<a href="/apiary?id=${group.apiary_id}&hive=${row.hive_id}" data-link="spa">${escapeHtml(row.hive_code || t('analyticsReports.noData'))}</a>`
+            : escapeHtml(row.hive_code || t('analyticsReports.noData'));
 
-  return `<span class="badge text-bg-secondary">${formatKg(delta)}</span>`;
-}
+          return `
+            <tr>
+              <td>${hiveCell}</td>
+              <td class="text-nowrap">${row.harvests_count || 0}</td>
+              <td class="text-nowrap">${formatKg(row.total_yield_kg || 0)} ${t('apiaries.hives.supers.kgUnit')}</td>
+              <td class="text-nowrap">${row.harvests_count ? `${formatKg(row.average_yield_kg || 0)} ${t('apiaries.hives.supers.kgUnit')}` : '-'}</td>
+              <td class="text-nowrap">${row.last_harvested_at ? formatDate(row.last_harvested_at) : '-'}</td>
+            </tr>
+          `;
+        })
+        .join('');
 
-function calibrationTableMarkup() {
-  const rows = reportData.calibrationRows || [];
-  if (!rows.length) {
-    return `<p class="mb-0 text-secondary">${t('analyticsReports.empty.calibration')}</p>`;
-  }
+      return `
+        <section class="page-card mb-3">
+          <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2 mb-3">
+            <h2 class="h5 mb-0">${apiaryLink}</h2>
+            <div class="text-md-end">
+              <p class="mb-0 small text-secondary">${t('analyticsReports.apiarySummary.totalYield')}: <strong>${formatKg(group.apiary_total_yield_kg || 0)} ${t('apiaries.hives.supers.kgUnit')}</strong></p>
+              <p class="mb-0 small text-secondary">${t('analyticsReports.apiarySummary.totalHarvests')}: <strong>${group.apiary_harvests_count || 0}</strong></p>
+            </div>
+          </div>
 
-  return `
-    <div class="table-responsive">
-      <table class="table table-sm align-middle mb-0">
-        <thead>
-          <tr>
-            <th>${t('analyticsReports.columns.date')}</th>
-            <th>${t('analyticsReports.columns.apiary')}</th>
-            <th>${t('analyticsReports.columns.hive')}</th>
-            <th class="text-nowrap">${t('analyticsReports.columns.estimatedKg')}</th>
-            <th class="text-nowrap">${t('analyticsReports.columns.actualKg')}</th>
-            <th>${t('analyticsReports.columns.deltaKg')}</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${rows
-            .map((row) => {
-              const apiaryCell = row.apiary_id
-                ? `<a href="/apiary?id=${row.apiary_id}" data-link="spa">${escapeHtml(row.apiary_name || t('analyticsReports.noData'))}</a>`
-                : escapeHtml(row.apiary_name || t('analyticsReports.noData'));
-
-              const hiveCell = row.hive_id && row.apiary_id
-                ? `<a href="/apiary?id=${row.apiary_id}&hive=${row.hive_id}" data-link="spa">${escapeHtml(row.hive_code || t('analyticsReports.noData'))}</a>`
-                : escapeHtml(row.hive_code || t('analyticsReports.noData'));
-
-              return `
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+              <thead>
                 <tr>
-                  <td class="text-nowrap">${formatDate(row.harvested_at)}</td>
-                  <td>${apiaryCell}</td>
-                  <td>${hiveCell}</td>
-                  <td class="text-nowrap">${formatKg(row.estimated_total_kg)} ${t('apiaries.hives.supers.kgUnit')}</td>
-                  <td class="text-nowrap">${row.actual_kg_total === null ? '-' : `${formatKg(row.actual_kg_total)} ${t('apiaries.hives.supers.kgUnit')}`}</td>
-                  <td>${deltaBadgeMarkup(row.delta_kg)}</td>
+                  <th>${t('analyticsReports.columns.hive')}</th>
+                  <th class="text-nowrap">${t('analyticsReports.columns.harvestsCount')}</th>
+                  <th class="text-nowrap">${t('analyticsReports.columns.totalYieldKg')}</th>
+                  <th class="text-nowrap">${t('analyticsReports.columns.avgYieldKg')}</th>
+                  <th class="text-nowrap">${t('analyticsReports.columns.lastHarvest')}</th>
                 </tr>
-              `;
-            })
-            .join('')}
-        </tbody>
-      </table>
-    </div>
-  `;
-}
-
-function trendTableMarkup() {
-  const rows = reportData.trendRows || [];
-  if (!rows.length) {
-    return `<p class="mb-0 text-secondary">${t('analyticsReports.empty.trend')}</p>`;
-  }
-
-  return `
-    <div class="table-responsive">
-      <table class="table table-sm align-middle mb-0">
-        <thead>
-          <tr>
-            <th>${t('analyticsReports.columns.apiary')}</th>
-            <th class="text-nowrap">${t('analyticsReports.columns.avgKgEstimate')}</th>
-            <th class="text-nowrap">${t('analyticsReports.columns.snapshotsCount')}</th>
-            <th class="text-nowrap">${t('analyticsReports.columns.lastUpdated')}</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${rows
-            .map((row) => {
-              const apiaryCell = row.apiary_id
-                ? `<a href="/apiary?id=${row.apiary_id}" data-link="spa">${escapeHtml(row.apiary_name || t('analyticsReports.noData'))}</a>`
-                : escapeHtml(row.apiary_name || t('analyticsReports.noData'));
-
-              return `
-                <tr>
-                  <td>${apiaryCell}</td>
-                  <td class="text-nowrap">${formatKg(row.average_kg_estimate)} ${t('apiaries.hives.supers.kgUnit')}</td>
-                  <td class="text-nowrap">${row.snapshots_count || 0}</td>
-                  <td class="text-nowrap">${formatDate(row.last_updated_at)}</td>
-                </tr>
-              `;
-            })
-            .join('')}
-        </tbody>
-      </table>
-    </div>
-  `;
+              </thead>
+              <tbody>
+                ${rowsMarkup}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      `;
+    })
+    .join('');
 }
 
 function reportsMarkup() {
-  const selectedLabel = t(`analyticsReports.filters.${selectedPeriod === 'all' ? 'all' : `days${selectedPeriod}`}`);
-
   return `
     <section class="page-card mb-3">
       <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-2">
@@ -179,22 +131,7 @@ function reportsMarkup() {
         </div>
       </div>
     </section>
-
-    <section class="page-card mb-3">
-      <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2 mb-3">
-        <h2 class="h5 mb-0">${t('analyticsReports.calibration.title')}</h2>
-        <span class="text-secondary small">${t('analyticsReports.calibration.caption')} (${selectedLabel})</span>
-      </div>
-      ${calibrationTableMarkup()}
-    </section>
-
-    <section class="page-card">
-      <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2 mb-3">
-        <h2 class="h5 mb-0">${t('analyticsReports.trend.title')}</h2>
-        <span class="text-secondary small">${t('analyticsReports.trend.caption')} (${selectedLabel})</span>
-      </div>
-      ${trendTableMarkup()}
-    </section>
+    ${apiaryYieldGroupsMarkup()}
   `;
 }
 
@@ -221,16 +158,7 @@ async function loadReports() {
 
   try {
     const selectedDays = getSelectedPeriodDays();
-
-    const [calibrationRows, trendRows] = await Promise.all([
-      listRecentHarvestCalibration(HARVEST_CALIBRATION_LIMIT, selectedDays),
-      listRecentFullnessTrend(selectedDays)
-    ]);
-
-    reportData = {
-      calibrationRows,
-      trendRows
-    };
+    reportData = await listApiaryHiveYieldSummary(selectedDays);
   } catch (error) {
     reportData = createDefaultReportData();
     showToast(getFriendlyErrorMessage(error), t('common.error'));

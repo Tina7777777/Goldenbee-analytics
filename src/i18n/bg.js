@@ -248,6 +248,7 @@ export const bg = {
   },
   analyticsReports: {
     noData: 'Няма данни',
+    title: 'Добиви по пчелини',
     calibration: {
       title: 'Калибрация: оценка срещу реален добив',
       caption: 'Последни до 20 добива'
@@ -275,11 +276,20 @@ export const bg = {
       avgFullness: 'Средно кг',
       avgKgEstimate: 'Средна оценка (кг)',
       snapshotsCount: 'Снимки',
-      lastUpdated: 'Последно обновяване'
+      lastUpdated: 'Последно обновяване',
+      harvestsCount: 'Брой добиви',
+      totalYieldKg: 'Общ добив (кг)',
+      avgYieldKg: 'Средно на добив (кг)',
+      lastHarvest: 'Последен добив'
+    },
+    apiarySummary: {
+      totalYield: 'Общ добив за пчелина',
+      totalHarvests: 'Общ брой добиви'
     },
     empty: {
       calibration: 'Няма данни за добиви за избрания период.',
-      trend: 'Няма данни за мед в магазините за избрания период.'
+      trend: 'Няма данни за мед в магазините за избрания период.',
+      apiaryHiveYield: 'Няма данни за добиви по пчелини за избрания период.'
     },
     errors: {
       generic: 'Възникна грешка при зареждане на анализите.',

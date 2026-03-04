@@ -248,6 +248,7 @@ export const en = {
   },
   analyticsReports: {
     noData: 'No data',
+    title: 'Apiary yield summary',
     calibration: {
       title: 'Calibration: estimated vs actual harvest',
       caption: 'Last up to 20 harvests'
@@ -275,11 +276,20 @@ export const en = {
       avgFullness: 'Avg kg',
       avgKgEstimate: 'Avg estimate (kg)',
       snapshotsCount: 'Snapshots',
-      lastUpdated: 'Last updated'
+      lastUpdated: 'Last updated',
+      harvestsCount: 'Harvest count',
+      totalYieldKg: 'Total yield (kg)',
+      avgYieldKg: 'Avg per harvest (kg)',
+      lastHarvest: 'Last harvest'
+    },
+    apiarySummary: {
+      totalYield: 'Total apiary yield',
+      totalHarvests: 'Total harvest count'
     },
     empty: {
       calibration: 'No harvest calibration data for this period.',
-      trend: 'No super honey data for this period.'
+      trend: 'No super honey data for this period.',
+      apiaryHiveYield: 'No apiary harvest data for the selected period.'
     },
     errors: {
       generic: 'An error occurred while loading analytics.',

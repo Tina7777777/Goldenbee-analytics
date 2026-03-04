@@ -217,3 +217,119 @@ export async function listRecentFullnessTrend(days = 14) {
     })
     .sort((a, b) => new Date(b.last_updated_at).getTime() - new Date(a.last_updated_at).getTime());
 }
+
+export async function listApiaryHiveYieldSummary(days = null) {
+  ensureSupabaseClient();
+  const userId = await getCurrentUserId();
+
+  const fromDateIso = Number.isInteger(days) && days > 0 ? daysAgoIso(days) : null;
+
+  const [maps, { data: harvests, error: harvestsError }] = await Promise.all([
+    loadLookupMaps(userId),
+    (() => {
+      let query = supabase
+        .from('harvests')
+        .select(
+          `
+          id,
+          hive_id,
+          harvested_at,
+          actual_kg_total,
+          harvest_items (
+            estimated_kg,
+            frames_count,
+            fill_level
+          )
+        `
+        )
+        .eq('owner_id', userId);
+
+      if (fromDateIso) {
+        query = query.gte('harvested_at', fromDateIso);
+      }
+
+      return query;
+    })()
+  ]);
+
+  if (harvestsError) {
+    throw harvestsError;
+  }
+
+  const rowsByHiveId = new Map();
+
+  maps.hivesById.forEach((hive) => {
+    rowsByHiveId.set(hive.id, {
+      hive_id: hive.id,
+      hive_code: hive.code,
+      apiary_id: hive.apiary_id,
+      harvests_count: 0,
+      total_yield_kg: 0,
+      average_yield_kg: 0,
+      last_harvested_at: null
+    });
+  });
+
+  (harvests || []).forEach((harvest) => {
+    const hive = maps.hivesById.get(harvest.hive_id);
+    if (!hive) {
+      return;
+    }
+
+    const row = rowsByHiveId.get(hive.id);
+    if (!row) {
+      return;
+    }
+
+    const hasActual = harvest.actual_kg_total !== null && harvest.actual_kg_total !== undefined;
+    const estimatedKg = (harvest.harvest_items || []).reduce((sum, item) => sum + estimateItemKg(item), 0);
+    const harvestKg = hasActual ? toNumber(harvest.actual_kg_total, 0) : estimatedKg;
+
+    row.harvests_count += 1;
+    row.total_yield_kg += harvestKg;
+
+    if (!row.last_harvested_at || new Date(harvest.harvested_at) > new Date(row.last_harvested_at)) {
+      row.last_harvested_at = harvest.harvested_at;
+    }
+  });
+
+  const groupsByApiaryId = new Map();
+
+  maps.apiariesById.forEach((apiary) => {
+    groupsByApiaryId.set(apiary.id, {
+      apiary_id: apiary.id,
+      apiary_name: apiary.name,
+      apiary_total_yield_kg: 0,
+      apiary_harvests_count: 0,
+      rows: []
+    });
+  });
+
+  rowsByHiveId.forEach((row) => {
+    const group = groupsByApiaryId.get(row.apiary_id);
+    if (!group) {
+      return;
+    }
+
+    const normalizedTotal = Number(row.total_yield_kg.toFixed(1));
+    const normalizedAvg = row.harvests_count > 0 ? Number((row.total_yield_kg / row.harvests_count).toFixed(1)) : 0;
+
+    const normalizedRow = {
+      ...row,
+      total_yield_kg: normalizedTotal,
+      average_yield_kg: normalizedAvg
+    };
+
+    group.rows.push(normalizedRow);
+    group.apiary_total_yield_kg += normalizedTotal;
+    group.apiary_harvests_count += row.harvests_count;
+  });
+
+  return Array.from(groupsByApiaryId.values())
+    .map((group) => ({
+      ...group,
+      apiary_total_yield_kg: Number(group.apiary_total_yield_kg.toFixed(1)),
+      rows: group.rows.sort((a, b) => String(a.hive_code || '').localeCompare(String(b.hive_code || ''), 'bg'))
+    }))
+    .sort((a, b) => String(a.apiary_name || '').localeCompare(String(b.apiary_name || ''), 'bg'));
+}
