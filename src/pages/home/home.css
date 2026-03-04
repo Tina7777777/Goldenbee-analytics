@@ -16,6 +16,16 @@
   object-fit: cover;
 }
 
+.home-profile-name-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.home-profile-name-link:hover,
+.home-profile-name-link:focus-visible {
+  text-decoration: underline;
+}
+
 .home-page #home-directory-search {
   max-width: 520px;
 }

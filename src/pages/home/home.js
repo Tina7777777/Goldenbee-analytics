@@ -38,14 +38,21 @@ function loadingMarkup() {
 
 function profileCardMarkup(profile) {
   const displayName = profile.display_name ? escapeHtml(profile.display_name) : UNKNOWN_BEEKEEPER_LABEL;
+  const photoUrl = profile.photo_url ? escapeHtml(profile.photo_url) : '';
   const aboutMarkup = profile.about ? `<p class="mb-3">${escapeHtml(profile.about)}</p>` : '';
-  const photoMarkup = profile.photo_url
+  const photoMarkup = photoUrl
     ? `
       <div class="home-profile-photo-wrap mb-3">
-        <img src="${escapeHtml(profile.photo_url)}" alt="${t('home.directory.fields.photoAlt')}" class="home-profile-photo" />
+        <a href="${photoUrl}" target="_blank" rel="noopener noreferrer">
+          <img src="${photoUrl}" alt="${t('home.directory.fields.photoAlt')}" class="home-profile-photo" />
+        </a>
       </div>
     `
     : '';
+
+  const displayNameMarkup = photoUrl
+    ? `<a href="${photoUrl}" target="_blank" rel="noopener noreferrer" class="home-profile-name-link">${displayName}</a>`
+    : displayName;
 
   const locationMarkup = profile.show_location && profile.location_text
     ? `<p class="mb-1"><span class="text-secondary">${t('home.directory.fields.location')}:</span> ${escapeHtml(profile.location_text)}</p>`
@@ -64,7 +71,7 @@ function profileCardMarkup(profile) {
     <div class="col">
       <article class="page-card h-100">
         ${photoMarkup}
-        <h2 class="h5 mb-3">${displayName}</h2>
+        <h2 class="h5 mb-3">${displayNameMarkup}</h2>
         ${aboutMarkup}
         <div class="small">
           ${locationMarkup}
