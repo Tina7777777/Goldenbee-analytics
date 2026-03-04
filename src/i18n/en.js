@@ -347,7 +347,7 @@ export const en = {
       quickStats: {
         activeSupers: 'Active supers',
         fullSupers: 'Full supers',
-        averageFullness: 'Average kg per super',
+        totalHoneyKg: 'Total honey kg',
         noData: 'No data'
       },
       confirmDelete: 'Are you sure you want to delete this hive?',

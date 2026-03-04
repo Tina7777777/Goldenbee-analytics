@@ -347,7 +347,7 @@ export const bg = {
       quickStats: {
         activeSupers: 'Активни магазини',
         fullSupers: 'Пълни магазини',
-        averageFullness: 'Средно кг в магазин',
+        totalHoneyKg: 'Общо кг мед',
         noData: 'Няма данни'
       },
       confirmDelete: 'Сигурни ли сте, че искате да изтриете този кошер?',

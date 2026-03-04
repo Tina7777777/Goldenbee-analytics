@@ -117,7 +117,7 @@ function getDefaultHiveSupersQuickStats() {
   return {
     activeSupersCount: 0,
     fullSupersCount: 0,
-    averageFullness: null,
+    totalHoneyKg: null,
     supersWithSnapshotsCount: 0
   };
 }
@@ -126,7 +126,7 @@ function getHiveSupersQuickStatsForHive(hiveId) {
   return hiveSupersQuickStatsById.get(hiveId) || getDefaultHiveSupersQuickStats();
 }
 
-function formatAverageFullness(value) {
+function formatTotalHoneyKg(value) {
   if (value === null || value === undefined) {
     return t('apiaries.hives.quickStats.noData');
   }
@@ -234,7 +234,7 @@ function hivesListMarkup() {
                       <p class="mb-1 small text-secondary">${t('apiaries.createdAt')}: ${formatDate(hive.created_at)}</p>
                       <p class="mb-1 small text-secondary">${t('apiaries.hives.quickStats.activeSupers')}: <strong>${quickStats.activeSupersCount}</strong></p>
                       <p class="mb-1 small text-secondary">${t('apiaries.hives.quickStats.fullSupers')}: <strong>${quickStats.fullSupersCount}</strong></p>
-                      <p class="mb-0 small text-secondary">${t('apiaries.hives.quickStats.averageFullness')}: <strong>${formatAverageFullness(quickStats.averageFullness)}</strong></p>
+                      <p class="mb-0 small text-secondary">${t('apiaries.hives.quickStats.totalHoneyKg')}: <strong>${formatTotalHoneyKg(quickStats.totalHoneyKg)}</strong></p>
                     </div>
                     <div class="d-flex flex-column flex-md-row gap-2 w-100 w-md-auto">
                       <button type="button" class="btn btn-outline-primary w-100 w-md-auto" data-action="toggle-hive-panel" data-hive-id="${hive.id}">
@@ -494,6 +494,11 @@ function attachListeners(containerEl) {
     }
 
     const action = actionElement.getAttribute('data-action');
+
+    if (action === 'open-hive-create' || action === 'open-hive-edit' || action === 'delete-hive' || action === 'toggle-hive-panel') {
+      event.preventDefault();
+      event.stopPropagation();
+    }
 
     if (action === 'open-hive-create') {
       openHiveModal('create');

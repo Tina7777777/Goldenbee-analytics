@@ -233,7 +233,7 @@ function createDefaultHiveSupersQuickStats() {
   return {
     activeSupersCount: 0,
     fullSupersCount: 0,
-    averageFullness: null,
+    totalHoneyKg: null,
     supersWithSnapshotsCount: 0
   };
 }
@@ -300,7 +300,6 @@ export async function getHiveSupersQuickStats(hiveIds = []) {
   });
 
   const fullnessSumByHiveId = new Map();
-  const fullnessCountByHiveId = new Map();
 
   latestSnapshotBySuperId.forEach((snapshot, superId) => {
     const hiveId = superIdToHiveId.get(superId);
@@ -317,16 +316,14 @@ export async function getHiveSupersQuickStats(hiveIds = []) {
     }
 
     fullnessSumByHiveId.set(hiveId, (fullnessSumByHiveId.get(hiveId) || 0) + fullness);
-    fullnessCountByHiveId.set(hiveId, (fullnessCountByHiveId.get(hiveId) || 0) + 1);
   });
 
   fullnessSumByHiveId.forEach((sum, hiveId) => {
-    const count = fullnessCountByHiveId.get(hiveId) || 0;
-    if (!count || !statsByHiveId.has(hiveId)) {
+    if (!statsByHiveId.has(hiveId)) {
       return;
     }
 
-    statsByHiveId.get(hiveId).averageFullness = sum / count;
+    statsByHiveId.get(hiveId).totalHoneyKg = sum;
   });
 
   return statsByHiveId;
