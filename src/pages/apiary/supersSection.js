@@ -483,3 +483,16 @@ export async function initSupersSection({ hiveId, containerEl, onChanged } = {})
     await loadSupers(hiveId);
   }
 }
+
+export async function refreshSupersSection(hiveId) {
+  if (!hiveId) {
+    return;
+  }
+
+  const containerEl = containersByHive.get(hiveId);
+  if (!containerEl) {
+    return;
+  }
+
+  await loadSupers(hiveId);
+}

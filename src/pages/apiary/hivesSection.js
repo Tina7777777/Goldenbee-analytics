@@ -7,7 +7,7 @@ import { formatKg } from '../../utils/numberFormat.js';
 import { formatDateTime } from '../../utils/dateTime.js';
 import { initHarvestsSection, renderHarvestsSection } from './harvestsSection.js';
 import { initInspectionsSection, renderInspectionsSection } from './inspectionsSection.js';
-import { initSupersSection, renderSupersSection } from './supersSection.js';
+import { initSupersSection, refreshSupersSection, renderSupersSection } from './supersSection.js';
 
 let currentApiaryId = '';
 let hives = [];
@@ -304,6 +304,10 @@ function renderHivesListOnly() {
         hiveId: hive.id,
         containerEl: harvestsContainerEl,
         onChanged: async () => {
+          await refreshSupersSection(hive.id);
+          await loadHiveSupersQuickStats();
+          renderHivesListOnly();
+
           if (typeof onDataChangedCallback === 'function') {
             await onDataChangedCallback();
           }
