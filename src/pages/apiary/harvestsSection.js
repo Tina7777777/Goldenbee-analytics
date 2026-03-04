@@ -2,6 +2,8 @@ import { Modal } from 'bootstrap';
 import { t } from '../../i18n/i18n.js';
 import { showToast } from '../../components/toast/toast.js';
 import { createHarvestWithItems, deleteHarvest, listHarvestsByHive } from '../../services/harvestsService.js';
+import { listSnapshotsBySuper, createSnapshot } from '../../services/superSnapshotsService.js';
+import { listSupersByHive } from '../../services/supersService.js';
 import { formatDateTime } from '../../utils/dateTime.js';
 import { formatKg } from '../../utils/numberFormat.js';
 
@@ -63,6 +65,56 @@ function estimateForItem(item) {
   }
 
   return frames * coeff;
+}
+
+function getHarvestDeductionKg(harvest) {
+  const actualKg = Number(harvest?.actual_kg_total);
+  if (!Number.isNaN(actualKg) && actualKg > 0) {
+    return actualKg;
+  }
+
+  const estimatedTotal = (harvest?.harvest_items || []).reduce((sum, item) => {
+    const estimatedKg = Number(item?.estimated_kg);
+    if (Number.isNaN(estimatedKg) || estimatedKg <= 0) {
+      return sum;
+    }
+
+    return sum + estimatedKg;
+  }, 0);
+
+  return estimatedTotal;
+}
+
+async function applyHarvestDeductionToSupers(hiveId, deductionKg) {
+  let remainingKg = Number(deductionKg);
+  if (Number.isNaN(remainingKg) || remainingKg <= 0) {
+    return;
+  }
+
+  const supers = await listSupersByHive(hiveId);
+  const activeSupers = (supers || [])
+    .filter((superItem) => !superItem?.removed_at)
+    .sort((a, b) => Number(a?.position || 0) - Number(b?.position || 0));
+
+  for (const superItem of activeSupers) {
+    if (remainingKg <= 0) {
+      break;
+    }
+
+    const snapshots = await listSnapshotsBySuper(superItem.id, 1);
+    const latestSnapshot = snapshots?.[0] || null;
+    const currentKg = Math.max(0, Number(latestSnapshot?.honey_fullness || 0));
+    const deductedKg = Math.min(currentKg, remainingKg);
+    const nextKg = Math.max(0, currentKg - deductedKg);
+
+    remainingKg -= deductedKg;
+
+    await createSnapshot({
+      super_id: superItem.id,
+      honey_fullness: nextKg,
+      notes: null
+    });
+  }
 }
 
 function formatDate(value) {
@@ -468,7 +520,7 @@ async function handleHarvestSubmit() {
   try {
     setHarvestSubmitState(true);
 
-    await createHarvestWithItems({
+    const createdHarvest = await createHarvestWithItems({
       hive_id: currentHarvestHiveId,
       items: validItems.map((item) => ({
         frames_count: item.frames_count,
@@ -476,6 +528,8 @@ async function handleHarvestSubmit() {
         notes: item.notes
       }))
     });
+
+    await applyHarvestDeductionToSupers(currentHarvestHiveId, getHarvestDeductionKg(createdHarvest));
 
     harvestModalInstance?.hide();
     showToast(t('apiaries.hives.harvests.toasts.createSuccess'), t('common.success'));
